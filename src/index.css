@@ -11,57 +11,7 @@ body {
   color: #1e293b;
 }
 
-/* Переопределение хендлов React Flow – тонкие тире */
-.react-flow__node .react-flow__handle {
-  width: 14px !important;
-  height: 2px !important;
-  border-radius: 0 !important;
-  border: none !important;
-  background: inherit !important;
-  transform: translateY(-50%) !important;
-  z-index: 10 !important;
-}
-.react-flow__node .react-flow__handle-left {
-  left: -8px !important;
-}
-.react-flow__node .react-flow__handle-right {
-  right: -8px !important;
-}
-
-/* Убираем стандартные круги */
+/* Отключаем стандартные стили хендлов, которые могут мешать */
 .react-flow__handle {
-  opacity: 1 !important;
-}
-/* Сброс */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #f5f7fb;
-  color: #1e293b;
-}
-
-/* Кастомные хендлы — тонкие тире, выходящие за границу ноды */
-.custom-handle {
-  width: 14px !important;
-  height: 2px !important;
-  border-radius: 0 !important;
-  border: none !important;
-  transform: translateY(-50%) !important;
-  z-index: 10 !important;
-}
-.custom-handle-left {
-  left: -8px !important;
-}
-.custom-handle-right {
-  right: -8px !important;
-}
-
-/* Убираем стандартные стили React Flow */
-.react-flow__handle {
-  opacity: 1 !important;
+  /* ничего не переопределяем, оставляем как есть */
 }
