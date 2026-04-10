@@ -9,6 +9,16 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
   const borderColor = data.color || '#2563eb';
   const { setNodes } = useReactFlow();
 
+  // Применяем настройки из data с дефолтами
+  const borderWidth = data.borderWidth ?? 1;
+  const borderRadius = data.borderRadius ?? 8;
+  const handleLength = data.handleLength ?? 8;
+  const handleThickness = data.handleThickness ?? 1;
+  const handleOffset = data.handleOffset ?? 27;
+  const headerFontSize = data.headerFontSize ?? 10;
+  const portFontSize = data.portFontSize ?? 6;
+  const headerFontWeight = data.headerFontWeight ?? 'normal';
+
   const handleLabelSubmit = () => {
     if (editLabel.trim()) data.label = editLabel;
     else setEditLabel(data.label);
@@ -45,9 +55,9 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
   return (
     <div
       style={{
-        background: 'white',
-        border: `1px solid ${borderColor}`,
-        borderRadius: 8,
+        background: 'var(--bg-panel, white)',
+        border: `${borderWidth}px solid ${borderColor}`,
+        borderRadius: `${borderRadius}px`,
         padding: '8px 0 4px 0',
         width: 'fit-content',
         minWidth: 180,
@@ -55,20 +65,20 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         cursor: 'grab',
         position: 'relative',
         fontFamily: 'Inter, sans-serif',
+        color: 'var(--text-primary)',
       }}
     >
       <div
         style={{
-          fontWeight: 'normal',
-          fontSize: 10,
+          fontWeight: headerFontWeight,
+          fontSize: headerFontSize,
           marginBottom: 6,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: 6,
-          borderBottom: '1px solid #e2e8f0',
+          borderBottom: '1px solid var(--border-light)',
           padding: '0 12px 4px 12px',
-          fontFamily: 'Inter, sans-serif',
         }}
       >
         <i className={data.icon} style={{ fontSize: 14, width: 16 }}></i>
@@ -77,7 +87,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         </span>
       </div>
 
-      <div style={{ fontSize: 6, textTransform: 'uppercase', lineHeight: 1.4, color: '#334155', padding: '0 12px', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ fontSize: portFontSize, textTransform: 'uppercase', lineHeight: 1.4, padding: '0 12px' }}>
         {Array.from({ length: maxRows }).map((_, rowIndex) => {
           const input = data.inputs[rowIndex];
           const output = data.outputs[rowIndex];
@@ -105,10 +115,10 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       id={input.id}
                       style={{
                         background: borderColor,
-                        width: 8,
-                        height: 1,
+                        width: handleLength,
+                        height: handleThickness,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
-                        left: -27,
+                        left: -handleOffset,
                         transform: 'translateY(-50%)',
                         border: 'none',
                         borderRadius: 0,
@@ -127,10 +137,10 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       id={output.id}
                       style={{
                         background: borderColor,
-                        width: 8,
-                        height: 1,
+                        width: handleLength,
+                        height: handleThickness,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
-                        right: -27,
+                        right: -handleOffset,
                         transform: 'translateY(-50%)',
                         border: 'none',
                         borderRadius: 0,
@@ -151,15 +161,14 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         <div
           style={{
             marginTop: 6,
-            fontSize: 6,
-            color: '#64748b',
-            borderTop: '1px solid #e2e8f0',
+            fontSize: portFontSize,
+            color: 'var(--text-secondary)',
+            borderTop: '1px solid var(--border-light)',
             padding: '4px 12px 0 12px',
             display: 'flex',
             justifyContent: 'flex-end',
             alignItems: 'center',
             gap: 4,
-            fontFamily: 'Inter, sans-serif',
           }}
         >
           <span>🔌 {powerInterface.voltage || 'AC'}</span>
@@ -171,15 +180,14 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         <div
           style={{
             marginTop: 6,
-            fontSize: 6,
-            color: '#64748b',
-            borderTop: '1px solid #e2e8f0',
+            fontSize: portFontSize,
+            color: 'var(--text-secondary)',
+            borderTop: '1px solid var(--border-light)',
             padding: '4px 12px 0 12px',
             display: 'flex',
             justifyContent: 'flex-end',
             alignItems: 'center',
             gap: 4,
-            fontFamily: 'Inter, sans-serif',
           }}
         >
           <span>🌐 PoE {totalPoE} Вт</span>
@@ -210,13 +218,15 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
             left: '50%',
             transform: 'translateX(-50%)',
             width: 'calc(100% - 24px)',
-            border: '1px solid #ccc',
+            border: '1px solid var(--border-light)',
             borderRadius: 4,
             padding: '2px 4px',
-            fontSize: 10,
+            fontSize: headerFontSize,
             fontFamily: 'Inter, sans-serif',
             textAlign: 'center',
             zIndex: 10,
+            background: 'var(--bg-panel)',
+            color: 'var(--text-primary)',
           }}
           className="nodrag"
         />
