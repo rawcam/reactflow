@@ -19,6 +19,8 @@ interface SidebarProps {
   onUpdateSnapToGrid: (snap: boolean) => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -38,6 +40,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onUpdateSnapToGrid,
   theme,
   onToggleTheme,
+  collapsed,
+  onToggleCollapse,
 }) => {
   const [localSettings, setLocalSettings] = useState({
     borderWidth: 1,
@@ -50,9 +54,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     headerFontWeight: 'normal' as 'normal' | 'bold',
   });
 
-  const [showSchema, setShowSchema] = useState(true);
+  const [showManage, setShowManage] = useState(true);
   const [showGrid, setShowGrid] = useState(false);
-  const [showTheme, setShowTheme] = useState(true);
   const [showStyle, setShowStyle] = useState(true);
 
   useEffect(() => {
@@ -78,14 +81,26 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <div className={`sidebar ${theme}`}>
-      {/* Схема */}
-      <div className="sidebar-section">
-        <div className="section-header" onClick={() => setShowSchema(!showSchema)}>
-          <span><i className="fas fa-folder-open"></i> Схема</span>
-          <i className={`fas fa-chevron-${showSchema ? 'down' : 'right'}`}></i>
+    <div className={`sidebar ${collapsed ? 'collapsed' : ''} ${theme}`}>
+      <div className="sidebar-header">
+        {!collapsed && <h2>Sputnik Studio</h2>}
+        <div className="header-actions">
+          <button className="theme-switch" onClick={onToggleTheme}>
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
+          <button className="collapse-btn" onClick={onToggleCollapse}>
+            {collapsed ? '→' : '←'}
+          </button>
         </div>
-        {showSchema && (
+      </div>
+
+      {/* Управление схемой */}
+      <div className="sidebar-section">
+        <div className="section-header" onClick={() => setShowManage(!showManage)}>
+          <span><i className="fas fa-folder-open"></i> {!collapsed && 'Управление'}</span>
+          {!collapsed && <i className={`fas fa-chevron-${showManage ? 'down' : 'right'}`}></i>}
+        </div>
+        {showManage && !collapsed && (
           <div className="section-content">
             <select value={currentSchemaId || ''} onChange={(e) => onLoadSchema(e.target.value)}>
               <option value="">-- Выберите схему --</option>
@@ -111,10 +126,10 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Сетка */}
       <div className="sidebar-section">
         <div className="section-header" onClick={() => setShowGrid(!showGrid)}>
-          <span><i className="fas fa-th"></i> Сетка</span>
-          <i className={`fas fa-chevron-${showGrid ? 'down' : 'right'}`}></i>
+          <span><i className="fas fa-th"></i> {!collapsed && 'Сетка'}</span>
+          {!collapsed && <i className={`fas fa-chevron-${showGrid ? 'down' : 'right'}`}></i>}
         </div>
-        {showGrid && (
+        {showGrid && !collapsed && (
           <div className="section-content">
             <label>Вид сетки</label>
             <select value={gridSettings.variant} onChange={(e) => onUpdateGridVariant(e.target.value)}>
@@ -141,23 +156,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
-      {/* Тема */}
-      <div className="sidebar-section">
-        <div className="section-header" onClick={() => setShowTheme(!showTheme)}>
-          <span><i className="fas fa-palette"></i> Тема</span>
-          <i className={`fas fa-chevron-${showTheme ? 'down' : 'right'}`}></i>
-        </div>
-        {showTheme && (
-          <div className="section-content">
-            <button onClick={onToggleTheme} style={{ width: '100%' }}>
-              {theme === 'light' ? '🌙 Тёмная' : '☀️ Светлая'}
-            </button>
-          </div>
-        )}
-      </div>
-
       {/* Оформление ноды */}
-      {selectedNode && (
+      {selectedNode && !collapsed && (
         <div className="sidebar-section">
           <div className="section-header" onClick={() => setShowStyle(!showStyle)}>
             <span><i className="fas fa-paint-brush"></i> Оформление</span>
@@ -236,7 +236,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
       )}
 
-      {!selectedNode && (
+      {!selectedNode && !collapsed && (
         <div className="sidebar-section">
           <div className="section-content">
             <p>Выберите ноду для настройки</p>
