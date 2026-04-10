@@ -350,6 +350,8 @@ const FlowEditor: React.FC = () => {
               fitView
               snapToGrid={gridSettings.snapToGrid}
               snapGrid={gridSettings.snapGrid}
+              connectionLineType={ConnectionLineType.Step}
+              defaultEdgeOptions={{ animated: false, markerEnd: undefined, markerStart: undefined }}
             >
               <Background variant={gridSettings.variant} gap={gridSettings.gap} color="#cbd5e1" />
               <Controls />
