@@ -81,7 +81,7 @@ const FlowEditor: React.FC = () => {
     visible: false, x: 0, y: 0, nodeId: null,
   });
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // <-- добавлено
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const { schemas, currentSchemaId, schemaName, setSchemaName, saveCurrentSchema, loadSchema, newSchema } = useFlowSchemas();
 
@@ -201,6 +201,7 @@ const FlowEditor: React.FC = () => {
         target: params.target,
         sourceHandle: params.sourceHandle,
         targetHandle: params.targetHandle,
+        type: 'step', // ортогональное ребро
         animated: false,
         markerEnd: undefined,
         markerStart: undefined,
@@ -346,7 +347,7 @@ const FlowEditor: React.FC = () => {
           snapToGrid={gridSettings.snapToGrid}
           snapGrid={gridSettings.snapGrid}
           connectionLineType={ConnectionLineType.Step}
-          defaultEdgeOptions={{ animated: false, markerEnd: undefined, markerStart: undefined }}
+          defaultEdgeOptions={{ type: 'step', animated: false, markerEnd: undefined, markerStart: undefined }}
         >
           <Background variant={gridSettings.variant} gap={gridSettings.gap} color="#cbd5e1" />
           <Controls />
