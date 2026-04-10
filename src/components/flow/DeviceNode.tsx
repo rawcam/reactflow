@@ -9,7 +9,6 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
   const borderColor = data.color || '#2563eb';
   const { setNodes } = useReactFlow();
 
-  // Применяем настройки из data с дефолтами
   const borderWidth = data.borderWidth ?? 1;
   const borderRadius = data.borderRadius ?? 8;
   const handleLength = data.handleLength ?? 8;
@@ -60,7 +59,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         borderRadius: `${borderRadius}px`,
         padding: '8px 0 4px 0',
         width: 'fit-content',
-        minWidth: 180,
+        minWidth: 90,
         boxShadow: selected ? '0 0 0 2px #2563eb' : 'none',
         cursor: 'grab',
         position: 'relative',
@@ -114,7 +113,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       position={Position.Left}
                       id={input.id}
                       style={{
-                        background: borderColor,
+                        background: 'red', // временно для отладки
                         width: handleLength,
                         height: handleThickness,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
@@ -136,7 +135,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       position={Position.Right}
                       id={output.id}
                       style={{
-                        background: borderColor,
+                        background: 'red',
                         width: handleLength,
                         height: handleThickness,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
@@ -196,8 +195,8 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
 
       <NodeResizeControl
         nodeId={id}
-        minWidth={180}
-        minHeight={80}
+        minWidth={90}
+        minHeight={40}
         keepAspectRatio={false}
         onResize={handleResize}
         color={borderColor}
