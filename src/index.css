@@ -43,27 +43,42 @@ body {
   border-right: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
-  padding: 16px 12px;
+  padding: 12px 0;
   overflow-y: auto;
   color: var(--text-primary);
 }
 
 .sidebar-section {
-  margin-bottom: 24px;
-  padding-bottom: 16px;
   border-bottom: 1px solid var(--border-light);
 }
 
-.sidebar-section h4 {
-  font-size: 12px;
-  font-weight: 600;
+.section-header {
+  padding: 10px 16px;
+  font-weight: 500;
+  font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   color: var(--text-secondary);
-  margin: 0 0 12px 0;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
 }
 
-.sidebar-section label {
+.section-header:hover {
+  background: var(--card-bg);
+}
+
+.section-header i {
+  font-size: 0.8rem;
+}
+
+.section-content {
+  padding: 10px 16px;
+}
+
+.section-content label {
   display: block;
   font-size: 11px;
   color: var(--text-secondary);
@@ -71,8 +86,8 @@ body {
   margin-top: 10px;
 }
 
-.sidebar-section input,
-.sidebar-section select {
+.section-content input,
+.section-content select {
   width: 100%;
   padding: 6px 8px;
   border: 1px solid var(--border-light);
@@ -98,6 +113,10 @@ body {
   font-size: 11px;
   cursor: pointer;
   color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .sidebar-actions button:hover {
@@ -144,3 +163,12 @@ body {
 .react-flow__edge marker {
   display: none !important;
 }
+
+/* Контрол ресайза */
+.react-flow__resize-control {
+  opacity: 0.8 !important;
+  border: 1px solid var(--accent) !important;
+  background: var(--bg-panel) !important;
+}
+
+/* Иконки (если не подключён Font Awesome, добавим в index.html) */
