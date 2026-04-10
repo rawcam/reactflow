@@ -1,8 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/reactflow/', // имя вашего репозитория
+  base: '/reactflow/',
+  build: {
+    outDir: 'docs',   // вместо dist
+  },
 });
