@@ -12,7 +12,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
   const borderWidth = data.borderWidth ?? 1;
   const borderRadius = data.borderRadius ?? 8;
   const handleLength = data.handleLength ?? 8;
-  const handleThickness = data.handleThickness ?? 1;
+  const handleThickness = data.handleThickness ?? 2;
   const handleOffset = data.handleOffset ?? 27;
   const headerFontSize = data.headerFontSize ?? 10;
   const portFontSize = data.portFontSize ?? 6;
@@ -58,8 +58,9 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         border: `${borderWidth}px solid ${borderColor}`,
         borderRadius: `${borderRadius}px`,
         padding: '8px 0 4px 0',
-        width: 'fit-content',
+        width: data.width || 'auto',
         minWidth: 90,
+        height: data.height || 'auto',
         boxShadow: selected ? '0 0 0 2px #2563eb' : 'none',
         cursor: 'grab',
         position: 'relative',
@@ -113,7 +114,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       position={Position.Left}
                       id={input.id}
                       style={{
-                        background: 'red', // временно для отладки
+                        background: 'red',
                         width: handleLength,
                         height: handleThickness,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
@@ -197,6 +198,8 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         nodeId={id}
         minWidth={90}
         minHeight={40}
+        maxWidth={800}
+        maxHeight={600}
         keepAspectRatio={false}
         onResize={handleResize}
         color={borderColor}
