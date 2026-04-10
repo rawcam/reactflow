@@ -13,10 +13,12 @@ import ReactFlow, {
   Node,
   MarkerType,
   ConnectionLineType,
+  useOnSelectionChange,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import DeviceNode from '../components/flow/DeviceNode';
 import EditNodeModal from '../components/flow/EditNodeModal';
+import Sidebar from '../components/flow/Sidebar';
 import { useFlowSchemas } from '../hooks/useFlowSchemas';
 import { DeviceNodeData, CableEdgeData, DeviceInterface } from '../types/flowTypes';
 import './FlowEditorPage.css';
@@ -67,30 +69,12 @@ const checkCompatibility = (
   return { compatible: false };
 };
 
-const InformerPanel: React.FC<{ nodes: Node<DeviceNodeData>[]; edges: Edge<CableEdgeData>[] }> = ({ nodes, edges }) => {
-  const totalPower = nodes.reduce((sum, n) => sum + (n.data.totalPowerConsumption || 0), 0);
-  const totalPoE = nodes.reduce((sum, n) => sum + (n.data.totalPoEConsumption || 0), 0);
-  const poeSources = nodes.filter(n => n.data.outputs.some(o => o.poe && o.poePower));
-  const totalPoeBudget = poeSources.reduce((sum, n) => sum + n.data.outputs.reduce((s, o) => s + (o.poePower || 0), 0), 0);
-  const usedPoeBudget = totalPoE;
-
-  return (
-    <div style={{ padding: '12px', background: '#f1f5f9', borderRadius: '8px', margin: '8px', fontSize: '13px' }}>
-      <h4 style={{ margin: '0 0 8px' }}>📊 Статистика</h4>
-      <div>🔌 Общая мощность: {totalPower} Вт</div>
-      <div>🌐 PoE бюджет: {usedPoeBudget} / {totalPoeBudget} Вт</div>
-      <div>🔗 Кабелей: {edges.length}</div>
-      <div>🖥️ Устройств: {nodes.length}</div>
-    </div>
-  );
-};
-
 const FlowEditor: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState<DeviceNodeData>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<CableEdgeData>([]);
   const [editingNode, setEditingNode] = useState<Node<DeviceNodeData> | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const [selectedNode, setSelectedNode] = useState<Node<DeviceNodeData> | null>(null);
   const [gridSettings, setGridSettings] = useState(() => {
     const saved = localStorage.getItem('flow_grid_settings');
     return saved ? JSON.parse(saved) : { variant: BackgroundVariant.Dots, gap: 15, snapToGrid: true, snapGrid: [15, 15] };
@@ -100,6 +84,12 @@ const FlowEditor: React.FC = () => {
   });
 
   const { schemas, currentSchemaId, schemaName, setSchemaName, saveCurrentSchema, loadSchema, newSchema } = useFlowSchemas();
+
+  useOnSelectionChange({
+    onChange: ({ nodes: selectedNodes }) => {
+      setSelectedNode(selectedNodes.length === 1 ? (selectedNodes[0] as Node<DeviceNodeData>) : null);
+    },
+  });
 
   const saveGridSettings = (newSettings: typeof gridSettings) => {
     setGridSettings(newSettings);
@@ -209,8 +199,9 @@ const FlowEditor: React.FC = () => {
         target: params.target,
         sourceHandle: params.sourceHandle,
         targetHandle: params.targetHandle,
-        animated: true,
-        markerEnd: { type: MarkerType.ArrowClosed },
+        animated: false,
+        markerEnd: undefined,
+        markerStart: undefined,
         label: compat.adapter ? `${compat.cableType} (${compat.adapter})` : compat.cableType,
         labelStyle: { fill: '#2563eb', fontWeight: 500, fontSize: 10 },
         style: { stroke: '#2563eb', strokeWidth: 2 },
@@ -302,67 +293,53 @@ const FlowEditor: React.FC = () => {
 
   const handleSaveSchema = () => saveCurrentSchema(nodes, edges);
 
-  return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#f5f7fb' }}>
-      <div style={{ padding: '8px 16px', background: 'white', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <select value={currentSchemaId || ''} onChange={e => handleLoadSchema(e.target.value)} style={{ padding: '6px 12px', borderRadius: '6px' }}>
-            <option value="">-- Выберите схему --</option>
-            {schemas.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-          <input value={schemaName} onChange={e => setSchemaName(e.target.value)} placeholder="Название схемы" style={{ padding: '6px 12px', borderRadius: '6px', width: '200px' }} />
-          <button onClick={handleSaveSchema} style={{ background: '#2563eb', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px' }}>💾 Сохранить</button>
-          <button onClick={handleNewSchema} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '6px 12px', borderRadius: '6px' }}>📄 Новая</button>
-          <button onClick={exportSVG} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '6px 12px', borderRadius: '6px' }}>📷 Экспорт SVG</button>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <div style={{ position: 'relative' }}>
-            <button className="add-node-btn" onClick={() => setShowSettings(!showSettings)}>⚙️</button>
-            {showSettings && (
-              <div className="settings-menu" onClick={e => e.stopPropagation()}>
-                <label>Вид сетки:
-                  <select value={gridSettings.variant} onChange={e => updateGridVariant(e.target.value as BackgroundVariant)}>
-                    <option value={BackgroundVariant.Dots}>Точки</option>
-                    <option value={BackgroundVariant.Lines}>Линии</option>
-                  </select>
-                </label>
-                <label>Размер ячейки:
-                  <input type="number" min="5" max="50" value={gridSettings.gap} onChange={e => updateGridGap(Number(e.target.value))} />
-                </label>
-                <label><input type="checkbox" checked={gridSettings.snapToGrid} onChange={e => updateSnapToGrid(e.target.checked)} /> Прилипание</label>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+  const handleUpdateNode = (nodeId: string, updates: Partial<DeviceNodeData>) => {
+    setNodes((nds) =>
+      nds.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, ...updates } } : n))
+    );
+  };
 
-      <div style={{ flex: 1, display: 'flex' }}>
-        <div style={{ flex: 1, position: 'relative' }}>
-          <ReactFlowProvider>
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              nodeTypes={nodeTypes}
-              onNodeDoubleClick={(_, node) => { setEditingNode(node); setShowModal(true); }}
-              onNodeContextMenu={onNodeContextMenu}
-              fitView
-              snapToGrid={gridSettings.snapToGrid}
-              snapGrid={gridSettings.snapGrid}
-              connectionLineType={ConnectionLineType.Step}
-              defaultEdgeOptions={{ animated: false, markerEnd: undefined, markerStart: undefined }}
-            >
-              <Background variant={gridSettings.variant} gap={gridSettings.gap} color="#cbd5e1" />
-              <Controls />
-              <MiniMap />
-            </ReactFlow>
-          </ReactFlowProvider>
-        </div>
-        <div style={{ width: '260px', background: 'white', borderLeft: '1px solid #e2e8f0', overflowY: 'auto' }}>
-          <InformerPanel nodes={nodes} edges={edges} />
-        </div>
+  return (
+    <div style={{ height: '100vh', display: 'flex', background: '#f5f7fb' }}>
+      <Sidebar
+        selectedNode={selectedNode}
+        onUpdateNode={handleUpdateNode}
+        schemas={schemas}
+        currentSchemaId={currentSchemaId}
+        schemaName={schemaName}
+        onSchemaNameChange={setSchemaName}
+        onLoadSchema={handleLoadSchema}
+        onNewSchema={handleNewSchema}
+        onSaveSchema={handleSaveSchema}
+        onExportSVG={exportSVG}
+        gridSettings={gridSettings}
+        onUpdateGridVariant={updateGridVariant}
+        onUpdateGridGap={updateGridGap}
+        onUpdateSnapToGrid={updateSnapToGrid}
+      />
+
+      <div style={{ flex: 1, position: 'relative' }}>
+        <ReactFlowProvider>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            nodeTypes={nodeTypes}
+            onNodeDoubleClick={(_, node) => { setEditingNode(node); setShowModal(true); }}
+            onNodeContextMenu={onNodeContextMenu}
+            fitView
+            snapToGrid={gridSettings.snapToGrid}
+            snapGrid={gridSettings.snapGrid}
+            connectionLineType={ConnectionLineType.Step}
+            defaultEdgeOptions={{ animated: false, markerEnd: undefined, markerStart: undefined }}
+          >
+            <Background variant={gridSettings.variant} gap={gridSettings.gap} color="#cbd5e1" />
+            <Controls />
+            <MiniMap />
+          </ReactFlow>
+        </ReactFlowProvider>
       </div>
 
       {contextMenu.visible && (
