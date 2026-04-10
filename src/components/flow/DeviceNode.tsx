@@ -55,18 +55,22 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         position: 'relative',
         width: data.width || 'auto',
         height: data.height || 'auto',
+        fontFamily: 'Inter, sans-serif',
       }}
     >
+      {/* ЗАГОЛОВОК */}
       <div
         style={{
-          fontWeight: 'bold',
+          fontWeight: 'normal',
           fontSize: 10,
           marginBottom: 6,
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'center',
           gap: 6,
           borderBottom: '1px solid #e2e8f0',
           padding: '0 12px 4px 12px',
+          fontFamily: 'Inter, sans-serif',
         }}
       >
         <i className={data.icon} style={{ fontSize: 14, width: 16 }}></i>
@@ -75,7 +79,8 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         </span>
       </div>
 
-      <div style={{ fontSize: 6, textTransform: 'uppercase', lineHeight: 1.4, color: '#334155', padding: '0 12px' }}>
+      {/* ПОРТЫ */}
+      <div style={{ fontSize: 6, textTransform: 'uppercase', lineHeight: 1.4, color: '#334155', padding: '0 12px', fontFamily: 'Inter, sans-serif' }}>
         {Array.from({ length: maxRows }).map((_, rowIndex) => {
           const input = data.inputs[rowIndex];
           const output = data.outputs[rowIndex];
@@ -145,11 +150,12 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         })}
       </div>
 
+      {/* ПИТАНИЕ */}
       {powerInterface && (
         <div
           style={{
             marginTop: 6,
-            fontSize: 9,
+            fontSize: 6,
             color: '#64748b',
             borderTop: '1px solid #e2e8f0',
             padding: '4px 12px 0 12px',
@@ -157,6 +163,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
             justifyContent: 'flex-end',
             alignItems: 'center',
             gap: 4,
+            fontFamily: 'Inter, sans-serif',
           }}
         >
           <span>🔌 {powerInterface.voltage || 'AC'}</span>
@@ -164,11 +171,12 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         </div>
       )}
 
+      {/* PoE */}
       {totalPoE > 0 && !powerInterface && (
         <div
           style={{
             marginTop: 6,
-            fontSize: 9,
+            fontSize: 6,
             color: '#64748b',
             borderTop: '1px solid #e2e8f0',
             padding: '4px 12px 0 12px',
@@ -176,6 +184,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
             justifyContent: 'flex-end',
             alignItems: 'center',
             gap: 4,
+            fontFamily: 'Inter, sans-serif',
           }}
         >
           <span>🌐 PoE {totalPoE} Вт</span>
