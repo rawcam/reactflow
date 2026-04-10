@@ -47,7 +47,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
       style={{
         background: 'white',
         border: `1px solid ${borderColor}`,
-        borderRadius: '4x',
+        borderRadius: '8x',
         padding: '8px 0 4px 0',
         minWidth: '180px',
         boxShadow: selected
