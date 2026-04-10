@@ -43,9 +43,60 @@ body {
   border-right: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
-  padding: 12px 0;
+  padding: 0;
   overflow-y: auto;
   color: var(--text-primary);
+  transition: width 0.2s;
+}
+
+.sidebar.collapsed {
+  width: 60px;
+}
+
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar.collapsed .sidebar-header {
+  padding: 16px 8px;
+  justify-content: center;
+}
+
+.sidebar-header h2 {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.sidebar.collapsed .sidebar-header h2 {
+  display: none;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.theme-switch,
+.collapse-btn {
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  width: 24px;
+  text-align: center;
+}
+
+.theme-switch:hover,
+.collapse-btn:hover {
+  color: var(--accent);
 }
 
 .sidebar-section {
@@ -66,16 +117,46 @@ body {
   transition: background 0.2s;
 }
 
+.sidebar.collapsed .section-header {
+  padding: 10px 0;
+  justify-content: center;
+}
+
 .section-header:hover {
   background: var(--card-bg);
 }
 
-.section-header i {
-  font-size: 0.8rem;
+.section-header i:first-child {
+  margin-right: 8px;
+}
+
+.sidebar.collapsed .section-header i:first-child {
+  margin-right: 0;
+}
+
+.sidebar.collapsed .section-header span {
+  display: none;
+}
+
+.section-header i:last-child {
+  transition: transform 0.2s;
+  font-size: 0.7rem;
+}
+
+.sidebar.collapsed .section-header i:last-child {
+  display: none;
 }
 
 .section-content {
   padding: 10px 16px;
+}
+
+.section-content.collapsed {
+  display: none;
+}
+
+.sidebar.collapsed .section-content {
+  display: none;
 }
 
 .section-content label {
@@ -89,12 +170,20 @@ body {
 .section-content input,
 .section-content select {
   width: 100%;
-  padding: 6px 8px;
+  padding: 8px 10px;
   border: 1px solid var(--border-light);
-  border-radius: 6px;
+  border-radius: 12px;
   font-size: 12px;
   background: var(--bg-panel);
   color: var(--text-primary);
+  transition: 0.2s;
+}
+
+.section-content input:focus,
+.section-content select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .sidebar-actions {
@@ -109,7 +198,7 @@ body {
   padding: 6px 0;
   background: var(--bg-panel);
   border: 1px solid var(--border-light);
-  border-radius: 6px;
+  border-radius: 40px;
   font-size: 11px;
   cursor: pointer;
   color: var(--text-primary);
@@ -117,34 +206,35 @@ body {
   align-items: center;
   justify-content: center;
   gap: 4px;
+  transition: 0.2s;
 }
 
 .sidebar-actions button:hover {
   background: var(--border-light);
+  border-color: var(--accent);
 }
 
-/* Хендлы */
+/* Хендлы — принудительно переопределяем */
 .react-flow__node .react-flow__handle {
-  width: 8px !important;
-  height: 1px !important;
-  min-width: 8px !important;
-  max-width: 8px !important;
-  min-height: 1px !important;
-  max-height: 1px !important;
-  border-radius: 0 !important;
+  all: unset !important;
+  position: absolute !important;
+  width: var(--handle-length, 8px) !important;
+  height: var(--handle-thickness, 2px) !important;
+  background: red !important;
   border: none !important;
-  background: inherit !important;
+  border-radius: 0 !important;
   transform: translateY(-50%) !important;
+  z-index: 100 !important;
   opacity: 1 !important;
   visibility: visible !important;
 }
 
 .react-flow__node .react-flow__handle-left {
-  left: -27px !important;
+  left: calc(-1 * var(--handle-offset, 27px)) !important;
 }
 
 .react-flow__node .react-flow__handle-right {
-  right: -27px !important;
+  right: calc(-1 * var(--handle-offset, 27px)) !important;
 }
 
 /* Рёбра */
@@ -170,5 +260,3 @@ body {
   border: 1px solid var(--accent) !important;
   background: var(--bg-panel) !important;
 }
-
-/* Иконки (если не подключён Font Awesome, добавим в index.html) */
