@@ -11,7 +11,6 @@ import ReactFlow, {
   Connection,
   Edge,
   Node,
-  MarkerType,
   ConnectionLineType,
   useOnSelectionChange,
 } from 'reactflow';
@@ -82,6 +81,7 @@ const FlowEditor: React.FC = () => {
   const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; nodeId: string | null }>({
     visible: false, x: 0, y: 0, nodeId: null,
   });
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   const { schemas, currentSchemaId, schemaName, setSchemaName, saveCurrentSchema, loadSchema, newSchema } = useFlowSchemas();
 
@@ -96,7 +96,7 @@ const FlowEditor: React.FC = () => {
     localStorage.setItem('flow_grid_settings', JSON.stringify(newSettings));
   };
 
-  const updateGridVariant = (variant: BackgroundVariant) => saveGridSettings({ ...gridSettings, variant });
+  const updateGridVariant = (variant: string) => saveGridSettings({ ...gridSettings, variant: variant as BackgroundVariant });
   const updateGridGap = (gap: number) => saveGridSettings({ ...gridSettings, gap, snapGrid: [gap, gap] });
   const updateSnapToGrid = (snap: boolean) => saveGridSettings({ ...gridSettings, snapToGrid: snap });
 
@@ -266,7 +266,7 @@ const FlowEditor: React.FC = () => {
     if (element) {
       const htmlToImage = (await import('html-to-image')).default;
       try {
-        const dataUrl = await htmlToImage.toSvg(element as HTMLElement, { backgroundColor: '#f9fafb' });
+        const dataUrl = await htmlToImage.toSvg(element as HTMLElement, { backgroundColor: theme === 'light' ? '#f9fafb' : '#0f172a' });
         const link = document.createElement('a');
         link.download = `flow-${schemaName}.svg`;
         link.href = dataUrl;
@@ -299,8 +299,12 @@ const FlowEditor: React.FC = () => {
     );
   };
 
+  const handleToggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
   return (
-    <div style={{ height: '100vh', display: 'flex', background: '#f5f7fb' }}>
+    <div className={`flow-editor ${theme}`} style={{ height: '100vh', display: 'flex', background: 'var(--bg-page)' }}>
       <Sidebar
         selectedNode={selectedNode}
         onUpdateNode={handleUpdateNode}
@@ -316,6 +320,8 @@ const FlowEditor: React.FC = () => {
         onUpdateGridVariant={updateGridVariant}
         onUpdateGridGap={updateGridGap}
         onUpdateSnapToGrid={updateSnapToGrid}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
       />
 
       <div style={{ flex: 1, position: 'relative' }}>
@@ -343,10 +349,10 @@ const FlowEditor: React.FC = () => {
       </div>
 
       {contextMenu.visible && (
-        <div style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, background: 'white', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '4px 0', zIndex: 1000, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-          <div onClick={() => handleContextMenuAction('edit')} style={{ padding: '6px 16px', cursor: 'pointer' }}>✏️ Редактировать</div>
-          <div onClick={() => handleContextMenuAction('duplicate')} style={{ padding: '6px 16px', cursor: 'pointer' }}>📋 Дублировать</div>
-          <div onClick={() => handleContextMenuAction('delete')} style={{ padding: '6px 16px', cursor: 'pointer' }}>🗑️ Удалить</div>
+        <div style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, background: 'var(--bg-panel)', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '4px 0', zIndex: 1000, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+          <div onClick={() => handleContextMenuAction('edit')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)' }}>✏️ Редактировать</div>
+          <div onClick={() => handleContextMenuAction('duplicate')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)' }}>📋 Дублировать</div>
+          <div onClick={() => handleContextMenuAction('delete')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)' }}>🗑️ Удалить</div>
         </div>
       )}
 
