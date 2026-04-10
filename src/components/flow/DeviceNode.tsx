@@ -113,15 +113,9 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       position={Position.Left}
                       id={input.id}
                       style={{
-                        background: '#ff0000', // ярко-красный для отладки, позже заменим на borderColor
-                        width: '14px',
-                        height: '2px',
-                        borderRadius: 0,
-                        border: 'none',
+                        background: borderColor,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
                         left: -8,
-                        transform: 'translateY(-50%)',
-                        zIndex: 100,
                       } as React.CSSProperties}
                     />
                   </>
@@ -135,15 +129,9 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       position={Position.Right}
                       id={output.id}
                       style={{
-                        background: '#00ff00', // ярко-зелёный для отладки
-                        width: '14px',
-                        height: '2px',
-                        borderRadius: 0,
-                        border: 'none',
+                        background: borderColor,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
                         right: -8,
-                        transform: 'translateY(-50%)',
-                        zIndex: 100,
                       } as React.CSSProperties}
                     />
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
