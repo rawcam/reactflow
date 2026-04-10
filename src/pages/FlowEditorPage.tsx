@@ -14,7 +14,7 @@ import ReactFlow, {
   MarkerType,
   ConnectionLineType,
 } from 'reactflow';
-//import 'reactflow/dist/style.css';
+import 'reactflow/dist/style.css';
 import DeviceNode from '../components/flow/DeviceNode';
 import EditNodeModal from '../components/flow/EditNodeModal';
 import { useFlowSchemas } from '../hooks/useFlowSchemas';
