@@ -92,7 +92,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                 position: 'relative',
               }}
             >
-              {/* ЛЕВЫЙ ХЕНДЛ (ВХОД) */}
+              {/* ВХОД (СЛЕВА) */}
               <div style={{ flex: 1, textAlign: 'left', position: 'relative' }}>
                 {input && (
                   <>
@@ -104,11 +104,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       position={Position.Left}
                       id={input.id}
                       style={{
-                        background: '#ff6600', // ярко-оранжевый для отладки
-                        width: 14,
-                        height: 2,
-                        borderRadius: 0,
-                        border: 'none',
+                        background: borderColor,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
                         left: -8,
                         transform: 'translateY(-50%)',
@@ -118,7 +114,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                 )}
               </div>
 
-              {/* ПРАВЫЙ ХЕНДЛ (ВЫХОД) */}
+              {/* ВЫХОД (СПРАВА) */}
               <div style={{ flex: 1, textAlign: 'right', position: 'relative' }}>
                 {output && (
                   <>
@@ -127,11 +123,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       position={Position.Right}
                       id={output.id}
                       style={{
-                        background: '#ff6600', // ярко-оранжевый для отладки
-                        width: 14,
-                        height: 2,
-                        borderRadius: 0,
-                        border: 'none',
+                        background: borderColor,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
                         right: -8,
                         transform: 'translateY(-50%)',
