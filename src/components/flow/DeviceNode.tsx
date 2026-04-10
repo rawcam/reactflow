@@ -9,6 +9,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
   const borderColor = data.color || '#2563eb';
   const { setNodes } = useReactFlow();
 
+  // Параметры из data или значения по умолчанию
   const borderWidth = data.borderWidth ?? 1;
   const borderRadius = data.borderRadius ?? 8;
   const handleLength = data.handleLength ?? 8;
@@ -114,7 +115,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       position={Position.Left}
                       id={input.id}
                       style={{
-                        background: 'red',
+                        background: borderColor,
                         width: handleLength,
                         height: handleThickness,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
@@ -136,7 +137,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       position={Position.Right}
                       id={output.id}
                       style={{
-                        background: 'red',
+                        background: borderColor,
                         width: handleLength,
                         height: handleThickness,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
