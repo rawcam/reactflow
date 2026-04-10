@@ -40,6 +40,15 @@ export interface DeviceNodeData {
   height?: number;
   totalPowerConsumption?: number;
   totalPoEConsumption?: number;
+  // Визуальные настройки
+  borderWidth?: number;
+  borderRadius?: number;
+  handleLength?: number;
+  handleThickness?: number;
+  handleOffset?: number;
+  headerFontSize?: number;
+  portFontSize?: number;
+  headerFontWeight?: 'normal' | 'bold';
 }
 
 export interface CableEdgeData {
