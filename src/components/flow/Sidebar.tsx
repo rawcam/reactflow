@@ -14,9 +14,11 @@ interface SidebarProps {
   onSaveSchema: () => void;
   onExportSVG: () => void;
   gridSettings: any;
-  onUpdateGridVariant: (variant: any) => void;
+  onUpdateGridVariant: (variant: string) => void;
   onUpdateGridGap: (gap: number) => void;
   onUpdateSnapToGrid: (snap: boolean) => void;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -34,6 +36,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onUpdateGridVariant,
   onUpdateGridGap,
   onUpdateSnapToGrid,
+  theme,
+  onToggleTheme,
 }) => {
   const [localSettings, setLocalSettings] = useState({
     borderWidth: 1,
@@ -71,7 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <div className="sidebar">
+    <div className={`sidebar ${theme}`}>
       <div className="sidebar-section">
         <h4>Схема</h4>
         <select value={currentSchemaId || ''} onChange={(e) => onLoadSchema(e.target.value)}>
@@ -122,6 +126,13 @@ const Sidebar: React.FC<SidebarProps> = ({
             </label>
           </>
         )}
+      </div>
+
+      <div className="sidebar-section">
+        <h4>Тема</h4>
+        <button onClick={onToggleTheme}>
+          {theme === 'light' ? '🌙 Тёмная' : '☀️ Светлая'}
+        </button>
       </div>
 
       {selectedNode && (
