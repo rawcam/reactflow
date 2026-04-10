@@ -6,8 +6,6 @@ function App() {
     <BrowserRouter basename="/reactflow">
       <Routes>
         <Route path="/" element={<FlowEditorPage />} />
-        {/* Дополнительно оставляем /flow-editor для обратной совместимости */}
-        <Route path="/flow-editor" element={<FlowEditorPage />} />
       </Routes>
     </BrowserRouter>
   );
