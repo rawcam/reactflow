@@ -41,15 +41,13 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
     );
   };
 
-  const powerInterface = [...data.inputs, ...data.outputs].find(
-    (iface) =>
-      (iface.connector === 'IEC' || iface.connector === 'PowerCON' || iface.protocol === 'Power') && !iface.poe
-  );
   const totalPoE = data.totalPoEConsumption ?? 0;
   const maxRows = Math.max(data.inputs.length, data.outputs.length);
 
   const handleLeftOffset = 12 + borderWidth + 8;
   const handleRightOffset = 12 + borderWidth + 8;
+
+  const powerSupply = data.powerSupply;
 
   return (
     <div
@@ -157,7 +155,8 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         })}
       </div>
 
-      {powerInterface && (
+      {/* Информер питания (если есть) */}
+      {powerSupply && (
         <div
           style={{
             marginTop: 6,
@@ -171,12 +170,13 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
             gap: 4,
           }}
         >
-          <span>🔌 {powerInterface.voltage || 'AC'}</span>
-          {powerInterface.power && <span>{powerInterface.power} Вт</span>}
+          <span>🔌 {powerSupply.voltage} {powerSupply.power} Вт</span>
+          {powerSupply.connector && <span>({powerSupply.connector})</span>}
         </div>
       )}
 
-      {totalPoE > 0 && !powerInterface && (
+      {/* Информер PoE (если есть и нет отдельного питания) */}
+      {totalPoE > 0 && !powerSupply && (
         <div
           style={{
             marginTop: 6,
