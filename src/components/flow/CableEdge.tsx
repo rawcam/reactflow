@@ -32,7 +32,7 @@ const CableEdge: FC<any> = ({
 
   const d = (data || {}) as CableEdgeData;
 
-  const badgeFontSize = d.badgeFontSize ?? 10;
+  const badgeFontSize = d.badgeFontSize ?? 6;
   const badgeTextColor = d.badgeTextColor ?? '#2563eb';
   const badgeBorderColor = d.badgeBorderColor ?? '#2563eb';
   const badgeBorderWidth = d.badgeBorderWidth ?? 1;
@@ -54,17 +54,19 @@ const CableEdge: FC<any> = ({
     ...(style as React.CSSProperties),
   };
 
-  // Вычисляем позиции для меток у концов (приблизительно)
-  const sourceLabelX = sourceX + (targetX - sourceX) * 0.1;
-  const sourceLabelY = sourceY + (targetY - sourceY) * 0.1;
-  const targetLabelX = sourceX + (targetX - sourceX) * 0.9;
-  const targetLabelY = sourceY + (targetY - sourceY) * 0.9;
+  const dx = targetX - sourceX;
+  const dy = targetY - sourceY;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  const offset = Math.min(30, length * 0.1);
+  const sourceOffsetX = sourceX + (dx / length) * offset;
+  const sourceOffsetY = sourceY + (dy / length) * offset;
+  const targetOffsetX = targetX - (dx / length) * offset;
+  const targetOffsetY = targetY - (dy / length) * offset;
 
   return (
     <>
       <BaseEdge id={id} path={edgePath} style={edgeStyle} markerEnd={markerEnd} markerStart={markerStart} />
       <EdgeLabelRenderer>
-        {/* Основной бейдж */}
         <div
           style={{
             position: 'absolute',
@@ -86,12 +88,11 @@ const CableEdge: FC<any> = ({
           {displayLabel}
         </div>
 
-        {/* Метка у источника */}
         {sourceLabel && (
           <div
             style={{
               position: 'absolute',
-              transform: `translate(-50%, -50%) translate(${sourceLabelX}px,${sourceLabelY}px)`,
+              transform: `translate(-50%, -50%) translate(${sourceOffsetX}px,${sourceOffsetY}px)`,
               fontSize: badgeFontSize * 0.9,
               fontWeight: 500,
               color: badgeTextColor,
@@ -110,12 +111,11 @@ const CableEdge: FC<any> = ({
           </div>
         )}
 
-        {/* Метка у приёмника */}
         {targetLabel && (
           <div
             style={{
               position: 'absolute',
-              transform: `translate(-50%, -50%) translate(${targetLabelX}px,${targetLabelY}px)`,
+              transform: `translate(-50%, -50%) translate(${targetOffsetX}px,${targetOffsetY}px)`,
               fontSize: badgeFontSize * 0.9,
               fontWeight: 500,
               color: badgeTextColor,
