@@ -15,6 +15,27 @@ export type ProtocolType =
   | 'USB2' | 'USB3' | 'USB-C-AltDP'
   | 'Power' | 'PoE';
 
+// Матрица совместимости разъёмов и протоколов
+export const CONNECTOR_PROTOCOL_MAP: Record<ConnectorType, ProtocolType[]> = {
+  HDMI: ['HDMI', 'DVI', 'DisplayPort'],
+  DVI: ['DVI', 'HDMI'],
+  DisplayPort: ['DisplayPort', 'HDMI'],
+  VGA: ['VGA'],
+  RJ45: ['Ethernet', 'Dante', 'AES67', 'AVB', 'PoE'],
+  XLR: ['AnalogAudio', 'AES3'],
+  TRS: ['AnalogAudio'],
+  RCA: ['AnalogAudio'],
+  'USB-C': ['USB2', 'USB3', 'USB-C-AltDP', 'DisplayPort', 'HDMI', 'Power'],
+  'USB-A': ['USB2', 'USB3', 'Power'],
+  'USB-B': ['USB2', 'USB3'],
+  Phoenix3: ['AnalogAudio', 'Power'],
+  Phoenix5: ['AnalogAudio', 'Power'],
+  PowerCON: ['Power'],
+  IEC: ['Power'],
+  Optical: ['AES3', 'AnalogAudio'],
+  BNC: ['AnalogAudio', 'AES3'],
+};
+
 export interface DeviceInterface {
   id: string;
   name: string;
@@ -69,6 +90,9 @@ export interface CableEdgeData {
   badgeBorderWidth?: number;
   badgeBorderRadius?: number;
   badgeBackgroundColor?: string;
+  edgeStrokeWidth?: number;
+  sourceLabelText?: string;
+  targetLabelText?: string;
 }
 
 export interface SavedSchema {
