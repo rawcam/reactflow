@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Node, Edge } from '@xyflow/react';
 import { DeviceNodeData, CableEdgeData } from '../../types/flowTypes';
 
-// Палитра: чёрный, белый, 5 оттенков серого, 7 цветов радуги
 const COLOR_PALETTE = [
   '#000000', '#ffffff',
   '#9ca3af', '#6b7280', '#4b5563', '#374151', '#1f2937',
@@ -72,9 +71,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [localNodeSettings, setLocalNodeSettings] = useState({
     borderWidth: 1,
     borderRadius: 8,
-    handleLength: 8,
-    handleThickness: 1,
-    handleOffset: 27,
     headerFontSize: 10,
     portFontSize: 6,
     headerFontWeight: 'normal' as 'normal' | 'bold',
@@ -103,9 +99,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       setLocalNodeSettings({
         borderWidth: (selectedNode.data.borderWidth as number) ?? 1,
         borderRadius: (selectedNode.data.borderRadius as number) ?? 8,
-        handleLength: (selectedNode.data.handleLength as number) ?? 8,
-        handleThickness: (selectedNode.data.handleThickness as number) ?? 1,
-        handleOffset: (selectedNode.data.handleOffset as number) ?? 27,
         headerFontSize: (selectedNode.data.headerFontSize as number) ?? 10,
         portFontSize: (selectedNode.data.portFontSize as number) ?? 6,
         headerFontWeight: (selectedNode.data.headerFontWeight as 'normal' | 'bold') ?? 'normal',
@@ -160,7 +153,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     handleEdgeSettingChange(key, defaultColor);
   };
 
-  // Компонент выбора цвета с RGB-пикером, HEX-полем и сеткой
   const ColorPickerWithPalette = ({
     value,
     onChange,
@@ -174,12 +166,15 @@ const Sidebar: React.FC<SidebarProps> = ({
   }) => (
     <div>
       <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
-        <input
-          type="color"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          style={{ width: '40px', height: '30px', padding: '2px', borderRadius: '6px', border: '1px solid var(--border-light)' }}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <input
+            type="color"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            style={{ width: '40px', height: '30px', padding: '2px', borderRadius: '6px', border: '1px solid var(--border-light)' }}
+          />
+          <div style={{ width: '30px', height: '30px', background: value, borderRadius: '6px', border: '1px solid var(--border-light)' }} />
+        </div>
         <input
           type="text"
           value={value}
@@ -359,31 +354,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 max="20"
                 value={localNodeSettings.borderRadius}
                 onChange={(e) => handleNodeSettingChange('borderRadius', Number(e.target.value))}
-              />
-              <label>Длина хендла (px)</label>
-              <input
-                type="number"
-                min="4"
-                max="20"
-                value={localNodeSettings.handleLength}
-                onChange={(e) => handleNodeSettingChange('handleLength', Number(e.target.value))}
-              />
-              <label>Толщина хендла (px)</label>
-              <input
-                type="number"
-                min="1"
-                max="5"
-                step="0.5"
-                value={localNodeSettings.handleThickness}
-                onChange={(e) => handleNodeSettingChange('handleThickness', Number(e.target.value))}
-              />
-              <label>Выступ хендла (px)</label>
-              <input
-                type="number"
-                min="0"
-                max="40"
-                value={localNodeSettings.handleOffset}
-                onChange={(e) => handleNodeSettingChange('handleOffset', Number(e.target.value))}
               />
               <label>Размер заголовка (px)</label>
               <input
