@@ -51,11 +51,21 @@ const DeviceNode = ({ id, data, selected }: any) => {
 
   const powerSupply = d.powerSupply;
 
+  // Иконка по умолчанию, если не задана
+  const iconClass = d.icon || 'fas fa-microchip';
+
+  // Адаптация цвета обводки для тёмной темы (если выбран чёрный или тёмный)
+  const isDarkTheme = document.documentElement.classList.contains('dark');
+  let effectiveBorderColor = borderColor;
+  if (isDarkTheme && (borderColor === '#000000' || borderColor === '#1e2b3c')) {
+    effectiveBorderColor = '#e0e0e0'; // светлая обводка для видимости
+  }
+
   return (
     <div
       style={{
         background: 'var(--bg-panel, white)',
-        border: `${borderWidth}px solid ${borderColor}`,
+        border: `${borderWidth}px solid ${effectiveBorderColor}`,
         borderRadius: `${borderRadius}px`,
         padding: '8px 0 4px 0',
         width: d.width || 'auto',
@@ -81,7 +91,7 @@ const DeviceNode = ({ id, data, selected }: any) => {
           padding: '0 12px 4px 12px',
         }}
       >
-        <i className={d.icon} style={{ fontSize: 6, width: 10, textAlign: 'center' }}></i>
+        <i className={iconClass} style={{ fontSize: 6, width: 10, textAlign: 'center' }}></i>
         <span style={{ cursor: 'pointer' }} onClick={() => setIsEditing(true)}>
           {d.label}
         </span>
@@ -114,7 +124,7 @@ const DeviceNode = ({ id, data, selected }: any) => {
                       position={Position.Left}
                       id={input.id}
                       style={{
-                        background: borderColor,
+                        background: effectiveBorderColor,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
                         left: -handleLeftOffset,
                         transform: 'translateY(-50%)',
@@ -136,7 +146,7 @@ const DeviceNode = ({ id, data, selected }: any) => {
                       position={Position.Right}
                       id={output.id}
                       style={{
-                        background: borderColor,
+                        background: effectiveBorderColor,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
                         right: -handleRightOffset,
                         transform: 'translateY(-50%)',
