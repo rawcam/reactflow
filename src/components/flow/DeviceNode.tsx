@@ -113,7 +113,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       style={{
                         background: borderColor,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
-                        left: -8,
+                        left: -20,
                         transform: 'translateY(-50%)',
                         width: 8,
                         height: 1,
@@ -135,7 +135,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       style={{
                         background: borderColor,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
-                        right: -8,
+                        right: -20,
                         transform: 'translateY(-50%)',
                         width: 8,
                         height: 1,
