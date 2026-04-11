@@ -12,12 +12,11 @@ interface EditNodeModalProps {
 
 const connectorOptions: ConnectorType[] = Object.keys(CONNECTOR_PROTOCOL_MAP) as ConnectorType[];
 
-// Палитра цветов: чёрный, белый, 5 оттенков серого, 7 цветов радуги + базовые оттенки
+// Палитра: чёрный, белый, 5 оттенков серого, 7 цветов радуги
 const COLOR_PALETTE = [
   '#000000', '#ffffff',
   '#9ca3af', '#6b7280', '#4b5563', '#374151', '#1f2937',
   '#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6',
-  '#ec4899', '#f43f5e', '#14b8a6', '#6366f1'
 ];
 
 const EditNodeModal: React.FC<EditNodeModalProps> = ({ isOpen, node, onClose, onSave }) => {
@@ -196,6 +195,54 @@ const EditNodeModal: React.FC<EditNodeModalProps> = ({ isOpen, node, onClose, on
     );
   };
 
+  // Компонент выбора цвета с RGB-пикером, HEX-полем и сеткой
+  const ColorPickerWithPalette = ({
+    value,
+    onChange,
+  }: {
+    value: string;
+    onChange: (color: string) => void;
+  }) => (
+    <div>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          style={{ width: '40px', height: '30px', padding: '2px', borderRadius: '6px', border: '1px solid var(--border-light)' }}
+        />
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          style={{ flex: 1, padding: '4px 8px', fontSize: '11px', borderRadius: '6px', border: '1px solid var(--border-light)', background: 'var(--bg-panel)', color: 'var(--text-primary)' }}
+        />
+        <button
+          onClick={() => onChange('#2563eb')}
+          style={{ padding: '4px 8px', fontSize: '11px', background: 'var(--card-bg)', border: '1px solid var(--border-light)', borderRadius: '6px', cursor: 'pointer' }}
+        >
+          Сброс
+        </button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px' }}>
+        {COLOR_PALETTE.map(c => (
+          <div
+            key={c}
+            style={{
+              width: '24px',
+              height: '24px',
+              background: c,
+              borderRadius: '6px',
+              cursor: 'pointer',
+              border: value === c ? '2px solid var(--text-primary)' : '1px solid var(--border-light)',
+            }}
+            onClick={() => onChange(c)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
@@ -239,28 +286,10 @@ const EditNodeModal: React.FC<EditNodeModalProps> = ({ isOpen, node, onClose, on
           </label>
           <label style={{ flex: 1 }}>
             <span style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: 'var(--text-secondary)' }}>Цвет</span>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px', marginTop: '4px' }}>
-              {COLOR_PALETTE.map(c => (
-                <div
-                  key={c}
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    background: c,
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    border: (editedData.color || '#2563eb') === c ? '3px solid var(--text-primary)' : '1px solid var(--border-light)',
-                  }}
-                  onClick={() => setEditedData({ ...editedData, color: c })}
-                />
-              ))}
-            </div>
-            <button
-              onClick={() => setEditedData({ ...editedData, color: '#2563eb' })}
-              style={{ marginTop: '8px', fontSize: '12px', padding: '4px 8px', background: 'var(--card-bg)', border: '1px solid var(--border-light)', borderRadius: '6px', cursor: 'pointer' }}
-            >
-              Сбросить цвет
-            </button>
+            <ColorPickerWithPalette
+              value={editedData.color || '#2563eb'}
+              onChange={(color) => setEditedData({ ...editedData, color })}
+            />
           </label>
         </div>
 
