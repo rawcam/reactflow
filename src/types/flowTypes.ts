@@ -1,4 +1,4 @@
-import { Node, Edge } from 'reactflow';
+import { Node, Edge } from '@xyflow/react';
 
 export type ConnectorType =
   | 'HDMI' | 'DVI' | 'DisplayPort' | 'VGA'
@@ -28,11 +28,12 @@ export interface DeviceInterface {
 
 export interface PowerSupply {
   voltage: 'AC' | 'DC';
-  power: number;            // в ваттах
-  connector?: 'IEC' | 'PowerCON' | 'USB' | 'Terminal'; // тип разъёма питания
+  power: number;
+  connector?: 'IEC' | 'PowerCON' | 'USB' | 'Terminal';
 }
 
 export interface DeviceNodeData {
+  [key: string]: unknown; // индексная сигнатура для совместимости
   label: string;
   manufacturer?: string;
   model?: string;
@@ -42,9 +43,8 @@ export interface DeviceNodeData {
   color?: string;
   width?: number;
   height?: number;
-  totalPoEConsumption?: number;      // суммарное PoE (вычисляется автоматически)
-  powerSupply?: PowerSupply;         // отдельно от входов/выходов
-  // Визуальные настройки
+  totalPoEConsumption?: number;
+  powerSupply?: PowerSupply;
   borderWidth?: number;
   borderRadius?: number;
   handleLength?: number;
@@ -56,13 +56,13 @@ export interface DeviceNodeData {
 }
 
 export interface CableEdgeData {
+  [key: string]: unknown; // индексная сигнатура
   cableType: string;
   sourceLabel: string;
   targetLabel: string;
   adapter?: string;
   length?: number;
-  labelText?: string;                // если задано, отображается вместо автоматического текста
-  // Стили бейджа
+  labelText?: string;
   badgeFontSize?: number;
   badgeTextColor?: string;
   badgeBorderColor?: string;
