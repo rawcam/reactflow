@@ -217,7 +217,7 @@ body {
 /* Рёбра */
 .react-flow__edge-path {
   stroke: #2563eb !important;
-  stroke-width: 2 !important;
+  stroke-width: 2; /* убрали !important */
   animation: none !important;
   marker-end: none !important;
   marker-start: none !important;
