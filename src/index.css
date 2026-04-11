@@ -1,3 +1,4 @@
+/* src/index.css */
 * {
   margin: 0;
   padding: 0;
@@ -57,7 +58,7 @@ body {
   padding: 16px;
   border-bottom: 1px solid var(--border-light);
   display: flex;
-  justify-content: space-between;
+  justifyContent: space-between;
   align-items: center;
 }
 
@@ -217,7 +218,7 @@ body {
 /* Рёбра */
 .react-flow__edge-path {
   stroke: #2563eb !important;
-  stroke-width: 2; /* убрали !important */
+  stroke-width: 2; /* убрали !important, чтобы толщина из компонента работала */
   animation: none !important;
   marker-end: none !important;
   marker-start: none !important;
@@ -243,7 +244,6 @@ body {
   border: none !important;
   transform: translateY(-50%) !important;
   z-index: 10 !important;
-  /* background наследуется из инлайн-стиля компонента */
 }
 
 /* Убираем глобальные позиции — теперь они задаются инлайн-стилями в DeviceNode */
