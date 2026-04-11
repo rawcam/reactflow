@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -19,7 +19,7 @@ import CableEdge from '../components/flow/CableEdge';
 import EditNodeModal from '../components/flow/EditNodeModal';
 import Sidebar from '../components/flow/Sidebar';
 import { useFlowSchemas } from '../hooks/useFlowSchemas';
-import { DeviceNodeData, CableEdgeData, DeviceInterface } from '../types/flowTypes';
+import { DeviceNodeData, CableEdgeData, DeviceInterface, SavedSchema } from '../types/flowTypes';
 import './FlowEditorPage.css';
 
 const nodeTypes = { deviceNode: DeviceNode };
@@ -76,6 +76,7 @@ const FlowEditor: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedNode, setSelectedNode] = useState<Node<DeviceNodeData> | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Edge<CableEdgeData> | null>(null);
+  const [copiedNode, setCopiedNode] = useState<Node<DeviceNodeData> | null>(null);
   const [gridSettings, setGridSettings] = useState(() => {
     const saved = localStorage.getItem('flow_grid_settings');
     const defaults = {
@@ -95,7 +96,9 @@ const FlowEditor: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  const { schemas, currentSchemaId, schemaName, setSchemaName, saveCurrentSchema, loadSchema, newSchema } = useFlowSchemas();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { schemas, currentSchemaId, schemaName, setSchemaName, saveCurrentSchema, loadSchema, newSchema, importSchema } = useFlowSchemas();
 
   useOnSelectionChange({
     onChange: ({ nodes: selectedNodes, edges: selectedEdges }) => {
@@ -249,13 +252,7 @@ const FlowEditor: React.FC = () => {
     } else if (action === 'duplicate') {
       const node = nodes.find(n => n.id === contextMenu.nodeId);
       if (node) {
-        const newNode = {
-          ...node,
-          id: Date.now().toString(),
-          position: { x: node.position.x + 50, y: node.position.y + 50 },
-          data: { ...node.data, inputs: node.data.inputs.map(i => ({ ...i, id: `${i.id}-copy-${Date.now()}` })), outputs: node.data.outputs.map(o => ({ ...o, id: `${o.id}-copy-${Date.now()}` })) }
-        };
-        setNodes(nds => nds.concat(newNode));
+        duplicateNode(node);
       }
     } else if (action === 'edit') {
       const node = nodes.find(n => n.id === contextMenu.nodeId);
@@ -267,20 +264,117 @@ const FlowEditor: React.FC = () => {
     closeContextMenu();
   };
 
+  const duplicateNode = (node: Node<DeviceNodeData>) => {
+    const newId = Date.now().toString();
+    const newNode: Node<DeviceNodeData> = {
+      ...node,
+      id: newId,
+      position: { x: node.position.x + 50, y: node.position.y + 50 },
+      data: {
+        ...node.data,
+        inputs: node.data.inputs.map(i => ({ ...i, id: `${i.id}-copy-${newId}` })),
+        outputs: node.data.outputs.map(o => ({ ...o, id: `${o.id}-copy-${newId}` })),
+      },
+    };
+    setNodes(nds => nds.concat(newNode));
+  };
+
+  // Добавление новой ноды
+  const addNewNode = () => {
+    const newId = Date.now().toString();
+    const newNode: Node<DeviceNodeData> = {
+      id: newId,
+      type: 'deviceNode',
+      position: { x: 200, y: 200 },
+      data: {
+        label: 'Новое устройство',
+        icon: 'fa-microchip',
+        inputs: [
+          { id: `in-${newId}-1`, name: 'Вход 1', direction: 'input', connector: 'HDMI', protocol: 'HDMI' },
+        ],
+        outputs: [
+          { id: `out-${newId}-1`, name: 'Выход 1', direction: 'output', connector: 'HDMI', protocol: 'HDMI' },
+        ],
+        color: '#2563eb',
+      },
+    };
+    setNodes(nds => nds.concat(newNode));
+  };
+
+  // Копирование / вставка через клавиатуру
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+C копирование
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        if (selectedNode) {
+          setCopiedNode(selectedNode);
+          e.preventDefault();
+        }
+      }
+      // Ctrl+V вставка
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        if (copiedNode) {
+          duplicateNode(copiedNode);
+          e.preventDefault();
+        }
+      }
+      // Delete
       if (e.key === 'Delete') {
         setNodes(nds => nds.filter(n => !n.selected));
         setEdges(eds => eds.filter(e => !e.selected));
       }
     };
-    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selectedNode, copiedNode, setNodes, setEdges]);
+
+  useEffect(() => {
     document.addEventListener('click', closeContextMenu);
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      document.removeEventListener('click', closeContextMenu);
-    };
+    return () => document.removeEventListener('click', closeContextMenu);
   }, []);
+
+  // Работа с файлами
+  const saveSchemaToFile = () => {
+    const schema: SavedSchema = {
+      id: currentSchemaId || Date.now().toString(),
+      name: schemaName || 'schema',
+      nodes,
+      edges,
+    };
+    const json = JSON.stringify(schema, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${schema.name}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const loadSchemaFromFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const schema = JSON.parse(content) as SavedSchema;
+        // Простая валидация
+        if (schema.nodes && schema.edges) {
+          importSchema(schema);
+          setNodes(schema.nodes);
+          setEdges(schema.edges);
+        } else {
+          alert('Неверный формат файла схемы');
+        }
+      } catch (err) {
+        alert('Ошибка чтения файла: ' + (err as Error).message);
+      }
+    };
+    reader.readAsText(file);
+    // Сброс input для повторной загрузки того же файла
+    event.target.value = '';
+  };
 
   const exportSVG = async () => {
     const element = document.querySelector('.react-flow');
@@ -344,6 +438,14 @@ const FlowEditor: React.FC = () => {
 
   return (
     <div className={`flow-editor ${theme}`} style={{ height: '100vh', display: 'flex', background: 'var(--bg-page)' }}>
+      {/* Скрытый input для загрузки файла */}
+      <input
+        type="file"
+        accept=".json"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        onChange={loadSchemaFromFile}
+      />
       <Sidebar
         selectedNode={selectedNode}
         selectedEdge={selectedEdge}
@@ -357,6 +459,9 @@ const FlowEditor: React.FC = () => {
         onNewSchema={handleNewSchema}
         onSaveSchema={handleSaveSchema}
         onExportSVG={exportSVG}
+        onSaveToFile={saveSchemaToFile}
+        onLoadFromFile={() => fileInputRef.current?.click()}
+        onAddNode={addNewNode}
         gridSettings={gridSettings}
         onUpdateGridVariant={updateGridVariant}
         onUpdateGridGap={updateGridGap}
