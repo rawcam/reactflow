@@ -19,6 +19,9 @@ interface SidebarProps {
   onUpdateGridVariant: (variant: string) => void;
   onUpdateGridGap: (gap: number) => void;
   onUpdateSnapToGrid: (snap: boolean) => void;
+  onUpdateGridColor: (color: string) => void;
+  onUpdateGridOpacity: (opacity: number) => void;
+  onUpdateGridVisible: (visible: boolean) => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
   collapsed: boolean;
@@ -42,6 +45,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   onUpdateGridVariant,
   onUpdateGridGap,
   onUpdateSnapToGrid,
+  onUpdateGridColor,
+  onUpdateGridOpacity,
+  onUpdateGridVisible,
   theme,
   onToggleTheme,
   collapsed,
@@ -74,7 +80,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [showNodeStyle, setShowNodeStyle] = useState(true);
   const [showEdgeStyle, setShowEdgeStyle] = useState(true);
 
-  // Синхронизация с выбранной нодой
   useEffect(() => {
     if (selectedNode) {
       setLocalNodeSettings({
@@ -90,7 +95,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [selectedNode]);
 
-  // Синхронизация с выбранным ребром
   useEffect(() => {
     if (selectedEdge && selectedEdge.data) {
       setLocalEdgeSettings({
@@ -189,6 +193,29 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onChange={(e) => onUpdateSnapToGrid(e.target.checked)}
               />
               Прилипание
+            </label>
+            <label>Цвет сетки</label>
+            <input
+              type="color"
+              value={gridSettings.color || '#cbd5e1'}
+              onChange={(e) => onUpdateGridColor(e.target.value)}
+            />
+            <label>Прозрачность</label>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={gridSettings.opacity ?? 0.5}
+              onChange={(e) => onUpdateGridOpacity(Number(e.target.value))}
+            />
+            <label>
+              <input
+                type="checkbox"
+                checked={gridSettings.visible ?? true}
+                onChange={(e) => onUpdateGridVisible(e.target.checked)}
+              />
+              Показывать сетку
             </label>
           </div>
         )}
