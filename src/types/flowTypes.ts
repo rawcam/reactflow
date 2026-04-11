@@ -1,19 +1,7 @@
 import { Node, Edge } from '@xyflow/react';
 
-export type ConnectorType =
-  | 'HDMI' | 'DVI' | 'DisplayPort' | 'VGA'
-  | 'RJ45' | 'XLR' | 'TRS' | 'RCA'
-  | 'USB-C' | 'USB-A' | 'USB-B'
-  | 'Phoenix3' | 'Phoenix5'
-  | 'PowerCON' | 'IEC'
-  | 'Optical' | 'BNC';
-
-export type ProtocolType =
-  | 'HDMI' | 'DVI' | 'DisplayPort' | 'VGA'
-  | 'Ethernet' | 'Dante' | 'AES67' | 'AVB'
-  | 'AnalogAudio' | 'AES3'
-  | 'USB2' | 'USB3' | 'USB-C-AltDP'
-  | 'Power' | 'PoE';
+export type ConnectorType = ... // без изменений
+export type ProtocolType = ... // без изменений
 
 export interface DeviceInterface {
   id: string;
@@ -33,7 +21,7 @@ export interface PowerSupply {
 }
 
 export interface DeviceNodeData {
-  [key: string]: unknown; // индексная сигнатура для совместимости
+  [key: string]: unknown;
   label: string;
   manufacturer?: string;
   model?: string;
@@ -56,7 +44,7 @@ export interface DeviceNodeData {
 }
 
 export interface CableEdgeData {
-  [key: string]: unknown; // индексная сигнатура
+  [key: string]: unknown;
   cableType: string;
   sourceLabel: string;
   targetLabel: string;
