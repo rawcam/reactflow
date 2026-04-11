@@ -1,7 +1,8 @@
 // src/components/flow/EditNodeModal.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Node } from '@xyflow/react';
 import { DeviceNodeData, DeviceInterface, ConnectorType, ProtocolType, PowerSupply, CONNECTOR_PROTOCOL_MAP, DeviceType, NetworkSwitchConfig } from '../../types/flowTypes';
+import IconPickerModal from './IconPickerModal';
 
 interface EditNodeModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ const COLOR_PALETTE = [
 
 const EditNodeModal: React.FC<EditNodeModalProps> = ({ isOpen, node, onClose, onSave }) => {
   const [editedData, setEditedData] = React.useState<DeviceNodeData | null>(null);
+  const [showIconPicker, setShowIconPicker] = useState(false);
 
   React.useEffect(() => {
     if (node) {
@@ -194,55 +196,72 @@ const EditNodeModal: React.FC<EditNodeModalProps> = ({ isOpen, node, onClose, on
     );
   };
 
-  const ColorPickerWithPalette = ({
+  const ColorPickerCompact = ({
     value,
     onChange,
   }: {
     value: string;
     onChange: (color: string) => void;
-  }) => (
-    <div>
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+  }) => {
+    const [expanded, setExpanded] = useState(false);
+
+    return (
+      <div style={{ position: 'relative' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div
+            onClick={() => setExpanded(!expanded)}
+            style={{
+              width: '32px',
+              height: '32px',
+              background: value,
+              borderRadius: '8px',
+              border: '1px solid var(--border-light)',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          />
           <input
-            type="color"
+            type="text"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            style={{ width: '40px', height: '30px', padding: '2px', borderRadius: '6px', border: '1px solid var(--border-light)' }}
+            style={{ flex: 1, padding: '6px 8px', fontSize: '12px', borderRadius: '6px', border: '1px solid var(--border-light)', background: 'var(--bg-panel)', color: 'var(--text-primary)' }}
           />
-          <div style={{ width: '30px', height: '30px', background: value, borderRadius: '6px', border: '1px solid var(--border-light)' }} />
+          <button
+            onClick={() => onChange('#2563eb')}
+            style={{ padding: '4px 8px', fontSize: '11px', background: 'var(--card-bg)', border: '1px solid var(--border-light)', borderRadius: '6px', cursor: 'pointer' }}
+          >
+            Сброс
+          </button>
         </div>
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          style={{ flex: 1, padding: '4px 8px', fontSize: '11px', borderRadius: '6px', border: '1px solid var(--border-light)', background: 'var(--bg-panel)', color: 'var(--text-primary)' }}
-        />
-        <button
-          onClick={() => onChange('#2563eb')}
-          style={{ padding: '4px 8px', fontSize: '11px', background: 'var(--card-bg)', border: '1px solid var(--border-light)', borderRadius: '6px', cursor: 'pointer' }}
-        >
-          Сброс
-        </button>
+        {expanded && (
+          <div style={{ marginTop: '8px', padding: '8px', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
+            <input
+              type="color"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              style={{ width: '100%', height: '40px', marginBottom: '8px' }}
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px' }}>
+              {COLOR_PALETTE.map(c => (
+                <div
+                  key={c}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    background: c,
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    border: value === c ? '2px solid var(--text-primary)' : '1px solid var(--border-light)',
+                  }}
+                  onClick={() => onChange(c)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px' }}>
-        {COLOR_PALETTE.map(c => (
-          <div
-            key={c}
-            style={{
-              width: '24px',
-              height: '24px',
-              background: c,
-              borderRadius: '6px',
-              cursor: 'pointer',
-              border: value === c ? '2px solid var(--text-primary)' : '1px solid var(--border-light)',
-            }}
-            onClick={() => onChange(c)}
-          />
-        ))}
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -263,7 +282,7 @@ const EditNodeModal: React.FC<EditNodeModalProps> = ({ isOpen, node, onClose, on
       >
         <h3 style={{ marginTop: 0, marginBottom: '20px', fontWeight: 600 }}>Редактировать устройство</h3>
 
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', alignItems: 'flex-end' }}>
           <label style={{ flex: 2 }}>
             <span style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: 'var(--text-secondary)' }}>Название устройства</span>
             <input
@@ -285,9 +304,21 @@ const EditNodeModal: React.FC<EditNodeModalProps> = ({ isOpen, node, onClose, on
               <option value="network_switch">Сетевой коммутатор</option>
             </select>
           </label>
+          <div style={{ flex: 1 }}>
+            <span style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: 'var(--text-secondary)' }}>Иконка</span>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <i className={editedData.icon || 'fas fa-microchip'} style={{ fontSize: '20px', width: '24px', textAlign: 'center' }} />
+              <button
+                onClick={() => setShowIconPicker(true)}
+                style={{ flex: 1, padding: '8px', background: 'var(--card-bg)', border: '1px solid var(--border-light)', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', color: 'var(--text-primary)' }}
+              >
+                Выбрать иконку
+              </button>
+            </div>
+          </div>
           <label style={{ flex: 1 }}>
             <span style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: 'var(--text-secondary)' }}>Цвет</span>
-            <ColorPickerWithPalette
+            <ColorPickerCompact
               value={editedData.color || '#2563eb'}
               onChange={(color) => setEditedData({ ...editedData, color })}
             />
@@ -363,6 +394,13 @@ const EditNodeModal: React.FC<EditNodeModalProps> = ({ isOpen, node, onClose, on
           <button onClick={handleSave} style={{ padding: '10px 24px', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 500 }}>Сохранить</button>
         </div>
       </div>
+
+      <IconPickerModal
+        isOpen={showIconPicker}
+        onClose={() => setShowIconPicker(false)}
+        onSelect={(icon) => setEditedData({ ...editedData, icon })}
+        currentIcon={editedData.icon}
+      />
     </div>
   );
 };
