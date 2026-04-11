@@ -7,6 +7,7 @@ interface SidebarProps {
   selectedEdge: Edge<CableEdgeData> | null;
   onUpdateNode: (nodeId: string, updates: Partial<DeviceNodeData>) => void;
   onUpdateEdge: (edgeId: string, updates: Partial<CableEdgeData>) => void;
+  onApplyNodeStyleToAll: (styles: Partial<DeviceNodeData>) => void; // новое
   schemas: any[];
   currentSchemaId: string | null;
   schemaName: string;
@@ -36,6 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   selectedEdge,
   onUpdateNode,
   onUpdateEdge,
+  onApplyNodeStyleToAll,
   schemas,
   currentSchemaId,
   schemaName,
@@ -71,6 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   });
 
   const [localEdgeSettings, setLocalEdgeSettings] = useState({
+    labelText: '',
     badgeFontSize: 10,
     badgeTextColor: '#2563eb',
     badgeBorderColor: '#2563eb',
@@ -102,6 +105,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   useEffect(() => {
     if (selectedEdge && selectedEdge.data) {
       setLocalEdgeSettings({
+        labelText: selectedEdge.data.labelText || '',
         badgeFontSize: selectedEdge.data.badgeFontSize ?? 10,
         badgeTextColor: selectedEdge.data.badgeTextColor ?? '#2563eb',
         badgeBorderColor: selectedEdge.data.badgeBorderColor ?? '#2563eb',
@@ -126,6 +130,12 @@ const Sidebar: React.FC<SidebarProps> = ({
     onUpdateEdge(selectedEdge.id, newSettings);
   };
 
+  const handleApplyToAll = () => {
+    if (selectedNode) {
+      onApplyNodeStyleToAll(localNodeSettings);
+    }
+  };
+
   return (
     <div className={`sidebar ${collapsed ? 'collapsed' : ''} ${theme}`}>
       <div className="sidebar-header">
@@ -139,6 +149,31 @@ const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Кнопка добавления устройства (всегда видна) */}
+      {!collapsed && (
+        <div style={{ padding: '12px 16px' }}>
+          <button
+            onClick={onAddNode}
+            style={{
+              width: '100%',
+              padding: '10px',
+              background: 'var(--accent)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
+          >
+            <i className="fas fa-plus"></i> Добавить устройство
+          </button>
+        </div>
+      )}
 
       {/* Управление схемой */}
       <div className="sidebar-section">
@@ -166,7 +201,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               <button onClick={onExportSVG}><i className="fas fa-camera"></i> Экспорт</button>
               <button onClick={onSaveToFile}><i className="fas fa-download"></i> В файл</button>
               <button onClick={onLoadFromFile}><i className="fas fa-upload"></i> Из файла</button>
-              <button onClick={onAddNode} style={{ gridColumn: 'span 2' }}><i className="fas fa-plus"></i> Добавить устройство</button>
             </div>
           </div>
         )}
@@ -303,6 +337,21 @@ const Sidebar: React.FC<SidebarProps> = ({
                 value={localNodeSettings.portFontSize}
                 onChange={(e) => handleNodeSettingChange('portFontSize', Number(e.target.value))}
               />
+              <button
+                onClick={handleApplyToAll}
+                style={{
+                  marginTop: '12px',
+                  padding: '6px',
+                  background: 'var(--accent)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  width: '100%',
+                }}
+              >
+                Применить ко всем нодам
+              </button>
             </div>
           )}
         </div>
@@ -317,6 +366,13 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
           {showEdgeStyle && (
             <div className="section-content">
+              <label>Текст бейджа</label>
+              <input
+                type="text"
+                value={localEdgeSettings.labelText}
+                onChange={(e) => handleEdgeSettingChange('labelText', e.target.value)}
+                placeholder="Автоматически"
+              />
               <label>Размер шрифта (px)</label>
               <input
                 type="number"
