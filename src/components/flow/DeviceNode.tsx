@@ -9,12 +9,8 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
   const borderColor = data.color || '#2563eb';
   const { setNodes } = useReactFlow();
 
-  // Параметры из data или значения по умолчанию
   const borderWidth = data.borderWidth ?? 1;
   const borderRadius = data.borderRadius ?? 8;
-  const handleLength = data.handleLength ?? 8;
-  const handleThickness = data.handleThickness ?? 2;
-  const handleOffset = data.handleOffset ?? 27;
   const headerFontSize = data.headerFontSize ?? 10;
   const portFontSize = data.portFontSize ?? 6;
   const headerFontWeight = data.headerFontWeight ?? 'normal';
@@ -116,10 +112,10 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       id={input.id}
                       style={{
                         background: borderColor,
-                        width: handleLength,
-                        height: handleThickness,
+                        width: 8,
+                        height: 2,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
-                        left: -handleOffset,
+                        left: -27,
                         transform: 'translateY(-50%)',
                         border: 'none',
                         borderRadius: 0,
@@ -138,10 +134,10 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       id={output.id}
                       style={{
                         background: borderColor,
-                        width: handleLength,
-                        height: handleThickness,
+                        width: 8,
+                        height: 2,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
-                        right: -handleOffset,
+                        right: -27,
                         transform: 'translateY(-50%)',
                         border: 'none',
                         borderRadius: 0,
