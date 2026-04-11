@@ -1,3 +1,4 @@
+// src/pages/FlowEditorPage.tsx
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   ReactFlow,
@@ -131,7 +132,7 @@ const FlowEditor: React.FC = () => {
           position: { x: 100, y: 100 },
           data: {
             label: 'Источник сигнала',
-            icon: 'fa-camera',
+            icon: 'fas fa-camera',
             ...createDemoInterfaces(),
             color: '#2563eb',
             powerSupply: { voltage: 'AC', power: 50, connector: 'IEC' },
@@ -143,7 +144,7 @@ const FlowEditor: React.FC = () => {
           position: { x: 400, y: 100 },
           data: {
             label: 'Коммутатор PoE',
-            icon: 'fa-network-wired',
+            icon: 'fas fa-network-wired',
             inputs: [
               { id: 'sw-in-1', name: 'Uplink', direction: 'input', connector: 'RJ45', protocol: 'Ethernet' },
             ],
@@ -161,7 +162,7 @@ const FlowEditor: React.FC = () => {
           position: { x: 700, y: 100 },
           data: {
             label: 'IP-камера',
-            icon: 'fa-video',
+            icon: 'fas fa-video',
             inputs: [
               { id: 'cam-in-1', name: 'PoE IN', direction: 'input', connector: 'RJ45', protocol: 'Ethernet', poe: true, poePower: 15 },
             ],
@@ -298,7 +299,7 @@ const FlowEditor: React.FC = () => {
       position: { x: 200, y: 200 },
       data: {
         label: 'Новое устройство',
-        icon: 'fa-microchip',
+        icon: 'fas fa-microchip',
         inputs: [
           { id: `in-${newId}-1`, name: 'Вход 1', direction: 'input', connector: 'HDMI', protocol: 'HDMI' },
         ],
