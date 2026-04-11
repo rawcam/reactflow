@@ -1,3 +1,4 @@
+// src/types/flowTypes.ts
 import type { Node, Edge } from '@xyflow/react';
 
 export type ConnectorType =
@@ -57,11 +58,11 @@ export interface PowerSupply {
 export type DeviceType = 'generic' | 'extender' | 'matrix' | 'network_switch';
 
 export interface NetworkSwitchConfig {
-  numPorts: number;          // общее количество портов RJ45
-  poePorts: number;          // сколько из них с PoE
-  sfpPorts: number;          // количество SFP портов
+  numPorts: number;
+  poePorts: number;
+  sfpPorts: number;
   speed: '100M' | '1G' | '2.5G' | '10G';
-  portLayout: 'odd_left' | 'odd_right'; // нечётные слева или справа
+  portLayout: 'odd_left' | 'odd_right';
 }
 
 export interface DeviceNodeData {
@@ -79,9 +80,6 @@ export interface DeviceNodeData {
   powerSupply?: PowerSupply;
   borderWidth?: number;
   borderRadius?: number;
-  handleLength?: number;
-  handleThickness?: number;
-  handleOffset?: number;
   headerFontSize?: number;
   portFontSize?: number;
   headerFontWeight?: 'normal' | 'bold';
