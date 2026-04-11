@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Handle, Position, NodeProps, NodeResizeControl, useReactFlow } from 'reactflow';
+import { Handle, Position, NodeProps, NodeResizeControl, useReactFlow } from '@xyflow/react';
 import { DeviceNodeData } from '../../types/flowTypes';
 
 const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
@@ -155,7 +155,6 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         })}
       </div>
 
-      {/* Информер питания (если есть) */}
       {powerSupply && (
         <div
           style={{
@@ -175,7 +174,6 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         </div>
       )}
 
-      {/* Информер PoE (если есть и нет отдельного питания) */}
       {totalPoE > 0 && !powerSupply && (
         <div
           style={{
@@ -202,7 +200,6 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         maxHeight={600}
         keepAspectRatio={false}
         onResize={handleResize}
-        color={borderColor}
         style={{ background: 'transparent', border: 'none' }}
       />
 
