@@ -4,7 +4,7 @@ import {
   EdgeProps,
   BaseEdge,
   EdgeLabelRenderer,
-} from 'reactflow';
+} from '@xyflow/react';
 import { CableEdgeData } from '../../types/flowTypes';
 
 const CableEdge: FC<EdgeProps<CableEdgeData>> = ({
@@ -38,7 +38,6 @@ const CableEdge: FC<EdgeProps<CableEdgeData>> = ({
   const badgeBorderRadius = data?.badgeBorderRadius ?? 12;
   const badgeBackgroundColor = data?.badgeBackgroundColor ?? 'var(--bg-panel, white)';
 
-  // Используем пользовательский текст, если есть, иначе автоматический
   const displayLabel = data?.labelText?.trim()
     ? data.labelText
     : data?.adapter
