@@ -78,7 +78,16 @@ const FlowEditor: React.FC = () => {
   const [selectedEdge, setSelectedEdge] = useState<Edge<CableEdgeData> | null>(null);
   const [gridSettings, setGridSettings] = useState(() => {
     const saved = localStorage.getItem('flow_grid_settings');
-    return saved ? JSON.parse(saved) : { variant: BackgroundVariant.Dots, gap: 15, snapToGrid: true, snapGrid: [15, 15] };
+    const defaults = {
+      variant: BackgroundVariant.Dots,
+      gap: 15,
+      snapToGrid: true,
+      snapGrid: [15, 15],
+      color: '#cbd5e1',
+      opacity: 0.5,
+      visible: true,
+    };
+    return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
   });
   const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; nodeId: string | null }>({
     visible: false, x: 0, y: 0, nodeId: null,
@@ -105,6 +114,9 @@ const FlowEditor: React.FC = () => {
   };
   const updateGridGap = (gap: number) => saveGridSettings({ ...gridSettings, gap, snapGrid: [gap, gap] });
   const updateSnapToGrid = (snap: boolean) => saveGridSettings({ ...gridSettings, snapToGrid: snap });
+  const updateGridColor = (color: string) => saveGridSettings({ ...gridSettings, color });
+  const updateGridOpacity = (opacity: number) => saveGridSettings({ ...gridSettings, opacity });
+  const updateGridVisible = (visible: boolean) => saveGridSettings({ ...gridSettings, visible });
 
   useEffect(() => {
     if (schemas.length === 0 && nodes.length === 0) {
@@ -197,7 +209,6 @@ const FlowEditor: React.FC = () => {
         sourceLabel,
         targetLabel,
         adapter: compat.adapter,
-        // Значения по умолчанию
         badgeFontSize: 10,
         badgeTextColor: '#2563eb',
         badgeBorderColor: '#2563eb',
@@ -311,7 +322,15 @@ const FlowEditor: React.FC = () => {
 
   const handleUpdateEdge = (edgeId: string, updates: Partial<CableEdgeData>) => {
     setEdges((eds) =>
-      eds.map((e) => (e.id === edgeId ? { ...e, data: { ...e.data, ...updates } } : e))
+      eds.map((e) => {
+        if (e.id === edgeId) {
+          return {
+            ...e,
+            data: { ...e.data, ...updates } as CableEdgeData,
+          } as Edge<CableEdgeData>;
+        }
+        return e;
+      })
     );
   };
 
@@ -342,6 +361,9 @@ const FlowEditor: React.FC = () => {
         onUpdateGridVariant={updateGridVariant}
         onUpdateGridGap={updateGridGap}
         onUpdateSnapToGrid={updateSnapToGrid}
+        onUpdateGridColor={updateGridColor}
+        onUpdateGridOpacity={updateGridOpacity}
+        onUpdateGridVisible={updateGridVisible}
         theme={theme}
         onToggleTheme={handleToggleTheme}
         collapsed={sidebarCollapsed}
@@ -365,7 +387,15 @@ const FlowEditor: React.FC = () => {
           connectionLineType={ConnectionLineType.Step}
           defaultEdgeOptions={{ type: 'cableEdge', animated: false }}
         >
-          <Background variant={gridSettings.variant} gap={gridSettings.gap} color="#cbd5e1" />
+          {gridSettings.visible && (
+            <div style={{ opacity: gridSettings.opacity ?? 0.5 }}>
+              <Background
+                variant={gridSettings.variant}
+                gap={gridSettings.gap}
+                color={gridSettings.color || '#cbd5e1'}
+              />
+            </div>
+          )}
           <Controls />
           <MiniMap />
         </ReactFlow>
