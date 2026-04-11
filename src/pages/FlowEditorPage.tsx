@@ -345,8 +345,8 @@ const FlowEditor: React.FC = () => {
   }, []);
 
   const applyNodeStyleToAll = (styles: Partial<DeviceNodeData>) => {
-    setNodes(nds =>
-      nds.map(n => ({
+    setNodes((nds) =>
+      nds.map((n) => ({
         ...n,
         data: { ...n.data, ...styles },
       }))
