@@ -23,20 +23,21 @@ const EditNodeModal: React.FC<EditNodeModalProps> = ({ isOpen, node, onClose, on
   if (!isOpen || !editedData) return null;
 
   const updateInterface = (type: 'inputs' | 'outputs', index: number, field: keyof DeviceInterface, value: any) => {
-  setEditedData(prev => {
-    if (!prev) return prev;
-    const newList = [...prev[type]];
-    const current = { ...newList[index] };
-    if (field === 'connector') {
-      current.connector = value;
-      current.protocol = CONNECTOR_PROTOCOL_MAP[value as ConnectorType][0];
-    } else {
-      (current as any)[field] = value;
-    }
-    newList[index] = current;
-    return { ...prev, [type]: newList };
-  });
-};
+    setEditedData(prev => {
+      if (!prev) return prev;
+      const newList = [...prev[type]];
+      const current = { ...newList[index] };
+      if (field === 'connector') {
+        current.connector = value;
+        current.protocol = CONNECTOR_PROTOCOL_MAP[value as ConnectorType][0];
+      } else {
+        (current as any)[field] = value;
+      }
+      newList[index] = current;
+      return { ...prev, [type]: newList };
+    });
+  };
+
   const addInterface = (type: 'inputs' | 'outputs') => {
     const newId = `${type}-${Date.now()}-${Math.random()}`;
     const newIf: DeviceInterface = {
