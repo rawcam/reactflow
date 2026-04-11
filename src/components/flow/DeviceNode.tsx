@@ -9,22 +9,25 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
   const borderColor = data.color || '#2563eb';
   const { setNodes } = useReactFlow();
 
-  const borderWidth = data.borderWidth ?? 1;
-  const borderRadius = data.borderRadius ?? 8;
-  const headerFontSize = data.headerFontSize ?? 10;
-  const portFontSize = data.portFontSize ?? 6;
-  const headerFontWeight = data.headerFontWeight ?? 'normal';
+  // Приводим data к нужному типу, обходя строгую проверку
+  const d = data as any as DeviceNodeData;
+
+  const borderWidth = d.borderWidth ?? 1;
+  const borderRadius = d.borderRadius ?? 8;
+  const headerFontSize = d.headerFontSize ?? 10;
+  const portFontSize = d.portFontSize ?? 6;
+  const headerFontWeight = d.headerFontWeight ?? 'normal';
 
   const handleLabelSubmit = () => {
-    if (editLabel.trim()) data.label = editLabel;
-    else setEditLabel(data.label);
+    if (editLabel.trim()) d.label = editLabel;
+    else setEditLabel(d.label);
     setIsEditing(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleLabelSubmit();
     else if (e.key === 'Escape') {
-      setEditLabel(data.label);
+      setEditLabel(d.label);
       setIsEditing(false);
     }
   };
@@ -41,13 +44,13 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
     );
   };
 
-  const totalPoE = data.totalPoEConsumption ?? 0;
-  const maxRows = Math.max(data.inputs.length, data.outputs.length);
+  const totalPoE = d.totalPoEConsumption ?? 0;
+  const maxRows = Math.max(d.inputs.length, d.outputs.length);
 
   const handleLeftOffset = 12 + borderWidth + 8;
   const handleRightOffset = 12 + borderWidth + 8;
 
-  const powerSupply = data.powerSupply;
+  const powerSupply = d.powerSupply;
 
   return (
     <div
@@ -56,9 +59,9 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
         border: `${borderWidth}px solid ${borderColor}`,
         borderRadius: `${borderRadius}px`,
         padding: '8px 0 4px 0',
-        width: data.width || 'auto',
+        width: d.width || 'auto',
         minWidth: 90,
-        height: data.height || 'auto',
+        height: d.height || 'auto',
         boxShadow: selected ? '0 0 0 2px #2563eb' : 'none',
         cursor: 'grab',
         position: 'relative',
@@ -79,16 +82,16 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
           padding: '0 12px 4px 12px',
         }}
       >
-        <i className={data.icon} style={{ fontSize: 14, width: 16 }}></i>
+        <i className={d.icon} style={{ fontSize: 14, width: 16 }}></i>
         <span style={{ cursor: 'pointer' }} onClick={() => setIsEditing(true)}>
-          {data.label}
+          {d.label}
         </span>
       </div>
 
       <div style={{ fontSize: portFontSize, textTransform: 'uppercase', lineHeight: 1.4, padding: '0 12px' }}>
         {Array.from({ length: maxRows }).map((_, rowIndex) => {
-          const input = data.inputs[rowIndex];
-          const output = data.outputs[rowIndex];
+          const input = d.inputs[rowIndex];
+          const output = d.outputs[rowIndex];
 
           return (
             <div
