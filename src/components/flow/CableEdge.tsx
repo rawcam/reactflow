@@ -1,13 +1,12 @@
 import { FC } from 'react';
 import {
   getSmoothStepPath,
-  EdgeProps,
   BaseEdge,
   EdgeLabelRenderer,
 } from '@xyflow/react';
 import { CableEdgeData } from '../../types/flowTypes';
 
-const CableEdge: FC<EdgeProps<CableEdgeData>> = ({
+const CableEdge: FC<any> = ({
   id,
   sourceX,
   sourceY,
@@ -31,7 +30,7 @@ const CableEdge: FC<EdgeProps<CableEdgeData>> = ({
     borderRadius: 8,
   });
 
-  const d = (data || {}) as any as CableEdgeData;
+  const d = (data || {}) as CableEdgeData;
 
   const badgeFontSize = d.badgeFontSize ?? 10;
   const badgeTextColor = d.badgeTextColor ?? '#2563eb';
