@@ -57,6 +57,13 @@ export interface CableEdgeData {
   targetLabel: string;
   adapter?: string;
   length?: number;
+  // Стили бейджа
+  badgeFontSize?: number;
+  badgeTextColor?: string;
+  badgeBorderColor?: string;
+  badgeBorderWidth?: number;
+  badgeBorderRadius?: number;
+  badgeBackgroundColor?: string;
 }
 
 export interface SavedSchema {
@@ -64,18 +71,4 @@ export interface SavedSchema {
   name: string;
   nodes: Node<DeviceNodeData>[];
   edges: Edge<CableEdgeData>[];
-}
-export interface CableEdgeData {
-  cableType: string;
-  sourceLabel: string;
-  targetLabel: string;
-  adapter?: string;
-  length?: number;
-  // стили бейджа
-  badgeFontSize?: number;
-  badgeTextColor?: string;
-  badgeBorderColor?: string;
-  badgeBorderWidth?: number;
-  badgeBorderRadius?: number;
-  badgeBackgroundColor?: string;
 }
