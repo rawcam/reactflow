@@ -70,8 +70,8 @@ const checkCompatibility = (
 };
 
 const FlowEditor: React.FC = () => {
-  const [nodes, setNodes, onNodesChange] = useNodesState<DeviceNodeData>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<CableEdgeData>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node<DeviceNodeData>>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge<CableEdgeData>>([]);
   const [editingNode, setEditingNode] = useState<Node<DeviceNodeData> | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedNode, setSelectedNode] = useState<Node<DeviceNodeData> | null>(null);
@@ -285,7 +285,7 @@ const FlowEditor: React.FC = () => {
         outputs: node.data.outputs.map(o => ({ ...o, id: `${o.id}-copy-${newId}` })),
       },
     };
-    setNodes(nds => nds.concat(newNode));
+    setNodes(nds => [...nds, newNode]);
   };
 
   const addNewNode = () => {
@@ -306,7 +306,7 @@ const FlowEditor: React.FC = () => {
         color: '#2563eb',
       },
     };
-    setNodes(nds => nds.concat(newNode));
+    setNodes(nds => [...nds, newNode]);
   };
 
   useEffect(() => {
@@ -499,7 +499,7 @@ const FlowEditor: React.FC = () => {
           onReconnect={onReconnect}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
-          onNodeDoubleClick={(_, node) => { setEditingNode(node as Node<DeviceNodeData>); setShowModal(true); }}
+          onNodeDoubleClick={(_event, node) => { setEditingNode(node as Node<DeviceNodeData>); setShowModal(true); }}
           onNodeContextMenu={onNodeContextMenu}
           fitView
           snapToGrid={gridSettings.snapToGrid}
