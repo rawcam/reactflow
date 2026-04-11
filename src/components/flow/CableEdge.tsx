@@ -38,9 +38,12 @@ const CableEdge: FC<EdgeProps<CableEdgeData>> = ({
   const badgeBorderRadius = data?.badgeBorderRadius ?? 12;
   const badgeBackgroundColor = data?.badgeBackgroundColor ?? 'var(--bg-panel, white)';
 
-  const labelText = data?.adapter
-    ? `${data.cableType} (${data.adapter})`
-    : data?.cableType || 'Cable';
+  // Используем пользовательский текст, если есть, иначе автоматический
+  const displayLabel = data?.labelText?.trim()
+    ? data.labelText
+    : data?.adapter
+      ? `${data.cableType} (${data.adapter})`
+      : data?.cableType || 'Cable';
 
   const edgeStyle = {
     stroke: selected ? '#ef4444' : '#2563eb',
@@ -70,7 +73,7 @@ const CableEdge: FC<EdgeProps<CableEdgeData>> = ({
           }}
           className="nodrag nopan"
         >
-          {labelText}
+          {displayLabel}
         </div>
       </EdgeLabelRenderer>
     </>
