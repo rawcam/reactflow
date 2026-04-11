@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
-import { Node, Edge } from 'reactflow';
+import { Node, Edge } from '@xyflow/react';
 import { DeviceNodeData, CableEdgeData, SavedSchema } from '../types/flowTypes';
+
+// ... остальной код без изменений
 
 export const useFlowSchemas = () => {
   const [schemas, setSchemas] = useState<SavedSchema[]>([]);
