@@ -401,12 +401,12 @@ const Sidebar: React.FC<SidebarProps> = ({
               <label>Размер шрифта (px)</label>
               <input
                 type="number"
-                min="8"
+                min="4"
                 max="20"
                 value={localEdgeSettings.badgeFontSize}
                 onChange={(e) => handleEdgeSettingChange('badgeFontSize', Number(e.target.value))}
               />
-              <label>Цвет текста</label>
+              <label>Цвет текста / заливки</label>
               <input
                 type="color"
                 value={localEdgeSettings.badgeTextColor}
@@ -434,7 +434,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 value={localEdgeSettings.badgeBorderRadius}
                 onChange={(e) => handleEdgeSettingChange('badgeBorderRadius', Number(e.target.value))}
               />
-              <label>Фон</label>
+              <label>Фон маркировок</label>
               <input
                 type="color"
                 value={localEdgeSettings.badgeBackgroundColor}
