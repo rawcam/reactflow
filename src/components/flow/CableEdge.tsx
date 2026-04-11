@@ -20,6 +20,7 @@ const CableEdge: FC<any> = ({
   markerEnd,
   markerStart,
 }) => {
+  // Получаем путь и координаты для центрального лейбла
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
     sourceY,
@@ -54,16 +55,36 @@ const CableEdge: FC<any> = ({
     ...(style as React.CSSProperties),
   };
 
-  const dx = targetX - sourceX;
-  const dy = targetY - sourceY;
-  const length = Math.sqrt(dx * dx + dy * dy);
-  const offset = Math.min(30, length * 0.1);
-  const sourceOffsetX = sourceX + (dx / length) * offset;
-  const sourceOffsetY = sourceY + (dy / length) * offset;
-  const targetOffsetX = targetX - (dx / length) * offset;
-  const targetOffsetY = targetY - (dy / length) * offset;
+  // Для меток у концов используем точки на пути, смещённые от source и target
+  // Используем дешёвый трюк: берём координаты из getSmoothStepPath с небольшим смещением по длине пути
+  const pathPoints = edgePath.match(/-?\d+\.?\d*/g)?.map(Number) || [];
+  let startX = sourceX, startY = sourceY;
+  let endX = targetX, endY = targetY;
+  
+  // Находим первую точку после source (примерно)
+  if (pathPoints.length >= 4) {
+    // Формат пути: M x y L x y ... или кривые
+    // Упростим: используем отрезок от source до ближайшей точки
+    startX = pathPoints[1];
+    startY = pathPoints[2];
+    endX = pathPoints[pathPoints.length - 2];
+    endY = pathPoints[pathPoints.length - 1];
+  }
 
-  // Стиль для маркировок (компактный)
+  // Смещение от концов (в пикселях)
+  const offset = 25;
+  const dxStart = startX - sourceX;
+  const dyStart = startY - sourceY;
+  const lenStart = Math.sqrt(dxStart*dxStart + dyStart*dyStart) || 1;
+  const sourceLabelX = sourceX + (dxStart / lenStart) * offset;
+  const sourceLabelY = sourceY + (dyStart / lenStart) * offset;
+
+  const dxEnd = targetX - endX;
+  const dyEnd = targetY - endY;
+  const lenEnd = Math.sqrt(dxEnd*dxEnd + dyEnd*dyEnd) || 1;
+  const targetLabelX = targetX - (dxEnd / lenEnd) * offset;
+  const targetLabelY = targetY - (dyEnd / lenEnd) * offset;
+
   const markerStyle = {
     fontSize: badgeFontSize * 0.85,
     padding: '1px 4px',
@@ -77,11 +98,10 @@ const CableEdge: FC<any> = ({
     zIndex: 10,
   };
 
-  // Стиль для основного бейджа (залитый цветом)
   const mainBadgeStyle = {
     fontSize: badgeFontSize,
     padding: '2px 6px',
-    background: badgeTextColor, // заливка цветом текста
+    background: badgeTextColor,
     color: 'white',
     border: 'none',
     borderRadius: badgeBorderRadius,
@@ -95,12 +115,11 @@ const CableEdge: FC<any> = ({
     <>
       <BaseEdge id={id} path={edgePath} style={edgeStyle} markerEnd={markerEnd} markerStart={markerStart} />
       <EdgeLabelRenderer>
-        {/* Маркировка у источника */}
         {sourceLabel && (
           <div
             style={{
               position: 'absolute',
-              transform: `translate(-50%, -50%) translate(${sourceOffsetX}px,${sourceOffsetY}px)`,
+              transform: `translate(-50%, -50%) translate(${sourceLabelX}px,${sourceLabelY}px)`,
               ...markerStyle,
             }}
             className="nodrag nopan"
@@ -109,12 +128,11 @@ const CableEdge: FC<any> = ({
           </div>
         )}
 
-        {/* Маркировка у приёмника */}
         {targetLabel && (
           <div
             style={{
               position: 'absolute',
-              transform: `translate(-50%, -50%) translate(${targetOffsetX}px,${targetOffsetY}px)`,
+              transform: `translate(-50%, -50%) translate(${targetLabelX}px,${targetLabelY}px)`,
               ...markerStyle,
             }}
             className="nodrag nopan"
@@ -123,7 +141,6 @@ const CableEdge: FC<any> = ({
           </div>
         )}
 
-        {/* Основной бейдж типа сигнала */}
         <div
           style={{
             position: 'absolute',
