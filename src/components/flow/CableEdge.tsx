@@ -49,6 +49,7 @@ const CableEdge: FC<any> = ({
       ? `${d.cableType} (${d.adapter})`
       : d.cableType || 'Cable';
 
+  // Принудительно задаём толщину через инлайн-стиль, глобальные стили не должны перебивать
   const edgeStyle = {
     stroke: selected ? '#ef4444' : '#2563eb',
     strokeWidth: edgeStrokeWidth,
@@ -80,7 +81,6 @@ const CableEdge: FC<any> = ({
   const sourcePos = getPointAtDistanceFromStart(edgePath, markerOffset);
   const targetPos = getPointAtDistanceFromEnd(edgePath, markerOffset);
 
-  // Стиль для маркировок (компактный, с центрированием текста)
   const markerStyle: React.CSSProperties = {
     fontSize: badgeFontSize * 0.85,
     padding: '1px 4px',
@@ -99,7 +99,6 @@ const CableEdge: FC<any> = ({
     justifyContent: 'center',
   };
 
-  // Стиль для основного бейджа (залитый цветом, текст по центру)
   const mainBadgeStyle: React.CSSProperties = {
     fontSize: badgeFontSize,
     padding: '2px 6px',
