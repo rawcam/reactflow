@@ -12,7 +12,6 @@ interface EditNodeModalProps {
 
 const connectorOptions: ConnectorType[] = Object.keys(CONNECTOR_PROTOCOL_MAP) as ConnectorType[];
 
-// Палитра: чёрный, белый, 5 оттенков серого, 7 цветов радуги
 const COLOR_PALETTE = [
   '#000000', '#ffffff',
   '#9ca3af', '#6b7280', '#4b5563', '#374151', '#1f2937',
@@ -195,7 +194,6 @@ const EditNodeModal: React.FC<EditNodeModalProps> = ({ isOpen, node, onClose, on
     );
   };
 
-  // Компонент выбора цвета с RGB-пикером, HEX-полем и сеткой
   const ColorPickerWithPalette = ({
     value,
     onChange,
@@ -205,12 +203,15 @@ const EditNodeModal: React.FC<EditNodeModalProps> = ({ isOpen, node, onClose, on
   }) => (
     <div>
       <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
-        <input
-          type="color"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          style={{ width: '40px', height: '30px', padding: '2px', borderRadius: '6px', border: '1px solid var(--border-light)' }}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <input
+            type="color"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            style={{ width: '40px', height: '30px', padding: '2px', borderRadius: '6px', border: '1px solid var(--border-light)' }}
+          />
+          <div style={{ width: '30px', height: '30px', background: value, borderRadius: '6px', border: '1px solid var(--border-light)' }} />
+        </div>
         <input
           type="text"
           value={value}
