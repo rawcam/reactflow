@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import {
-  ReactFlow,
+import ReactFlowOriginal, {
   Background,
   BackgroundVariant,
   Controls,
@@ -24,7 +23,8 @@ import { useFlowSchemas } from '../hooks/useFlowSchemas';
 import { DeviceNodeData, CableEdgeData, DeviceInterface, SavedSchema } from '../types/flowTypes';
 import './FlowEditorPage.css';
 
-const Flow = ReactFlow as any;
+// Обход ошибки типов JSX
+const ReactFlow = ReactFlowOriginal as any;
 
 const nodeTypes = { deviceNode: DeviceNode };
 const edgeTypes = { cableEdge: CableEdge };
@@ -217,7 +217,8 @@ const FlowEditor: React.FC = () => {
         sourceLabel,
         targetLabel,
         adapter: compat.adapter,
-        badgeFontSize: 10,
+        badgeFontSize: 6,          // ← добавлено
+        edgeStrokeWidth: 2,         // ← добавлено
         badgeTextColor: '#2563eb',
         badgeBorderColor: '#2563eb',
         badgeBorderWidth: 1,
@@ -493,7 +494,7 @@ const FlowEditor: React.FC = () => {
       />
 
       <div style={{ flex: 1, position: 'relative' }}>
-        <Flow
+        <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
@@ -521,7 +522,7 @@ const FlowEditor: React.FC = () => {
           )}
           <Controls />
           <MiniMap />
-        </Flow>
+        </ReactFlow>
       </div>
 
       {contextMenu.visible && (
