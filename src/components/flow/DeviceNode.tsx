@@ -76,12 +76,12 @@ const DeviceNode = ({ id, data, selected }: any) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 6,
+          gap: 4,
           borderBottom: '1px solid var(--border-light)',
           padding: '0 12px 4px 12px',
         }}
       >
-        <i className={d.icon} style={{ fontSize: 12, width: 16, textAlign: 'center' }}></i>
+        <i className={d.icon} style={{ fontSize: 6, width: 10, textAlign: 'center' }}></i>
         <span style={{ cursor: 'pointer' }} onClick={() => setIsEditing(true)}>
           {d.label}
         </span>
