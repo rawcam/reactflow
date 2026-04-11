@@ -48,6 +48,10 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
   const totalPoE = data.totalPoEConsumption ?? 0;
   const maxRows = Math.max(data.inputs.length, data.outputs.length);
 
+  // Динамическое смещение хендлов с учётом padding (12px) + borderWidth + 8px выступ
+  const handleLeftOffset = 12 + borderWidth + 8;
+  const handleRightOffset = 12 + borderWidth + 8;
+
   return (
     <div
       style={{
@@ -113,7 +117,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       style={{
                         background: borderColor,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
-                        left: -20,
+                        left: -handleLeftOffset,
                         transform: 'translateY(-50%)',
                         width: 8,
                         height: 1,
@@ -135,7 +139,7 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
                       style={{
                         background: borderColor,
                         top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
-                        right: -20,
+                        right: -handleRightOffset,
                         transform: 'translateY(-50%)',
                         width: 8,
                         height: 1,
