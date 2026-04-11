@@ -14,14 +14,15 @@ export type ProtocolType =
   | 'AnalogAudio' | 'AES3'
   | 'USB2' | 'USB3' | 'USB-C-AltDP'
   | 'Power' | 'PoE'
-  | 'RS232' | 'RS485' | 'DMX512' | 'GPIO' | 'KNX' | 'Modbus';
+  | 'RS232' | 'RS485' | 'DMX512' | 'GPIO' | 'KNX' | 'Modbus'
+  | 'HDBaseT' | 'AVoverIP' | 'SDVoE';
 
 export const CONNECTOR_PROTOCOL_MAP: Record<ConnectorType, ProtocolType[]> = {
   HDMI: ['HDMI', 'DVI', 'DisplayPort'],
   DVI: ['DVI', 'HDMI'],
   DisplayPort: ['DisplayPort', 'HDMI'],
   VGA: ['VGA'],
-  RJ45: ['Ethernet', 'Dante', 'AES67', 'AVB', 'PoE'],
+  RJ45: ['Ethernet', 'Dante', 'AES67', 'AVB', 'PoE', 'HDBaseT', 'AVoverIP', 'SDVoE'],
   XLR: ['AnalogAudio', 'AES3', 'DMX512'],
   TRS: ['AnalogAudio'],
   RCA: ['AnalogAudio'],
@@ -53,6 +54,16 @@ export interface PowerSupply {
   connector?: 'IEC' | 'PowerCON' | 'USB' | 'Terminal';
 }
 
+export type DeviceType = 'generic' | 'extender' | 'matrix' | 'network_switch';
+
+export interface NetworkSwitchConfig {
+  numPorts: number;          // общее количество портов RJ45
+  poePorts: number;          // сколько из них с PoE
+  sfpPorts: number;          // количество SFP портов
+  speed: '100M' | '1G' | '2.5G' | '10G';
+  portLayout: 'odd_left' | 'odd_right'; // нечётные слева или справа
+}
+
 export interface DeviceNodeData {
   [key: string]: unknown;
   label: string;
@@ -74,6 +85,8 @@ export interface DeviceNodeData {
   headerFontSize?: number;
   portFontSize?: number;
   headerFontWeight?: 'normal' | 'bold';
+  deviceType?: DeviceType;
+  networkSwitchConfig?: NetworkSwitchConfig;
 }
 
 export interface CableEdgeData {
