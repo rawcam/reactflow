@@ -1,3 +1,4 @@
+// src/components/flow/DeviceNode.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import { Handle, Position, NodeResizeControl, useReactFlow } from '@xyflow/react';
 import { DeviceNodeData } from '../../types/flowTypes';
@@ -80,7 +81,7 @@ const DeviceNode = ({ id, data, selected }: any) => {
           padding: '0 12px 4px 12px',
         }}
       >
-        <i className={d.icon} style={{ fontSize: 14, width: 16 }}></i>
+        <i className={d.icon} style={{ fontSize: 12, width: 16, textAlign: 'center' }}></i>
         <span style={{ cursor: 'pointer' }} onClick={() => setIsEditing(true)}>
           {d.label}
         </span>
