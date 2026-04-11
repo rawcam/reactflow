@@ -40,6 +40,7 @@ const CableEdge: FC<any> = ({
   const badgeBorderRadius = d.badgeBorderRadius ?? 12;
   const badgeBackgroundColor = d.badgeBackgroundColor ?? 'var(--bg-panel, white)';
   const edgeStrokeWidth = d.edgeStrokeWidth ?? 2;
+  const edgeStrokeColor = d.edgeStrokeColor ?? '#2563eb';
   const sourceLabel = d.sourceLabelText || d.sourceLabel?.split(':')[1]?.trim() || '';
   const targetLabel = d.targetLabelText || d.targetLabel?.split(':')[1]?.trim() || '';
 
@@ -49,14 +50,12 @@ const CableEdge: FC<any> = ({
       ? `${d.cableType} (${d.adapter})`
       : d.cableType || 'Cable';
 
-  // Принудительно задаём толщину через инлайн-стиль, глобальные стили не должны перебивать
   const edgeStyle = {
-    stroke: selected ? '#ef4444' : '#2563eb',
+    stroke: selected ? '#ef4444' : edgeStrokeColor,
     strokeWidth: edgeStrokeWidth,
     ...(style as React.CSSProperties),
   };
 
-  // Фиксированный отступ 15px от начала и конца пути
   const getPointAtDistanceFromStart = (path: string, distance: number) => {
     const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -122,37 +121,16 @@ const CableEdge: FC<any> = ({
       <BaseEdge id={id} path={edgePath} style={edgeStyle} markerEnd={markerEnd} markerStart={markerStart} />
       <EdgeLabelRenderer>
         {sourceLabel && (
-          <div
-            style={{
-              ...markerStyle,
-              left: sourcePos.x,
-              top: sourcePos.y,
-            }}
-            className="nodrag nopan"
-          >
+          <div style={{ ...markerStyle, left: sourcePos.x, top: sourcePos.y }} className="nodrag nopan">
             {sourceLabel}
           </div>
         )}
         {targetLabel && (
-          <div
-            style={{
-              ...markerStyle,
-              left: targetPos.x,
-              top: targetPos.y,
-            }}
-            className="nodrag nopan"
-          >
+          <div style={{ ...markerStyle, left: targetPos.x, top: targetPos.y }} className="nodrag nopan">
             {targetLabel}
           </div>
         )}
-        <div
-          style={{
-            ...mainBadgeStyle,
-            left: labelX,
-            top: labelY,
-          }}
-          className="nodrag nopan"
-        >
+        <div style={{ ...mainBadgeStyle, left: labelX, top: labelY }} className="nodrag nopan">
           {displayLabel}
         </div>
       </EdgeLabelRenderer>
