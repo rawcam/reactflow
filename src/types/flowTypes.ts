@@ -13,27 +13,27 @@ export type ProtocolType =
   | 'Ethernet' | 'Dante' | 'AES67' | 'AVB'
   | 'AnalogAudio' | 'AES3'
   | 'USB2' | 'USB3' | 'USB-C-AltDP'
-  | 'Power' | 'PoE';
+  | 'Power' | 'PoE'
+  | 'RS232' | 'RS485' | 'DMX512' | 'GPIO' | 'KNX' | 'Modbus';
 
-// Матрица совместимости разъёмов и протоколов
 export const CONNECTOR_PROTOCOL_MAP: Record<ConnectorType, ProtocolType[]> = {
   HDMI: ['HDMI', 'DVI', 'DisplayPort'],
   DVI: ['DVI', 'HDMI'],
   DisplayPort: ['DisplayPort', 'HDMI'],
   VGA: ['VGA'],
   RJ45: ['Ethernet', 'Dante', 'AES67', 'AVB', 'PoE'],
-  XLR: ['AnalogAudio', 'AES3'],
+  XLR: ['AnalogAudio', 'AES3', 'DMX512'],
   TRS: ['AnalogAudio'],
   RCA: ['AnalogAudio'],
   'USB-C': ['USB2', 'USB3', 'USB-C-AltDP', 'DisplayPort', 'HDMI', 'Power'],
   'USB-A': ['USB2', 'USB3', 'Power'],
   'USB-B': ['USB2', 'USB3'],
-  Phoenix3: ['AnalogAudio', 'Power'],
-  Phoenix5: ['AnalogAudio', 'Power'],
+  Phoenix3: ['AnalogAudio', 'RS232', 'RS485', 'DMX512', 'GPIO', 'Power', 'Modbus'],
+  Phoenix5: ['AnalogAudio', 'RS232', 'RS485', 'DMX512', 'GPIO', 'Power', 'Modbus'],
   PowerCON: ['Power'],
   IEC: ['Power'],
   Optical: ['AES3', 'AnalogAudio'],
-  BNC: ['AnalogAudio', 'AES3'],
+  BNC: ['AnalogAudio', 'AES3', 'DMX512'],
 };
 
 export interface DeviceInterface {
