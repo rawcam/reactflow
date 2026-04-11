@@ -52,12 +52,12 @@ export interface DeviceNodeData {
 }
 
 export interface CableEdgeData {
-  cableType: string;
+  cableType: string;                     // обязательное, как и было
   sourceLabel: string;
   targetLabel: string;
   adapter?: string;
   length?: number;
-  // Стили бейджа
+  // Добавленные поля для стилей бейджа
   badgeFontSize?: number;
   badgeTextColor?: string;
   badgeBorderColor?: string;
