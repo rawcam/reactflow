@@ -63,47 +63,45 @@ const CableEdge: FC<any> = ({
   const targetOffsetX = targetX - (dx / length) * offset;
   const targetOffsetY = targetY - (dy / length) * offset;
 
+  // Стиль для маркировок (компактный)
+  const markerStyle = {
+    fontSize: badgeFontSize * 0.85,
+    padding: '1px 4px',
+    background: badgeBackgroundColor,
+    border: `${badgeBorderWidth}px solid ${badgeBorderColor}`,
+    borderRadius: badgeBorderRadius,
+    color: badgeTextColor,
+    fontWeight: 500,
+    whiteSpace: 'nowrap',
+    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+    zIndex: 10,
+  };
+
+  // Стиль для основного бейджа (залитый цветом)
+  const mainBadgeStyle = {
+    fontSize: badgeFontSize,
+    padding: '2px 6px',
+    background: badgeTextColor, // заливка цветом текста
+    color: 'white',
+    border: 'none',
+    borderRadius: badgeBorderRadius,
+    fontWeight: 500,
+    whiteSpace: 'nowrap',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    zIndex: 10,
+  };
+
   return (
     <>
       <BaseEdge id={id} path={edgePath} style={edgeStyle} markerEnd={markerEnd} markerStart={markerStart} />
       <EdgeLabelRenderer>
-        <div
-          style={{
-            position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-            fontSize: badgeFontSize,
-            fontWeight: 500,
-            color: badgeTextColor,
-            background: badgeBackgroundColor,
-            border: `${badgeBorderWidth}px solid ${badgeBorderColor}`,
-            borderRadius: badgeBorderRadius,
-            padding: '2px 8px',
-            pointerEvents: 'all',
-            whiteSpace: 'nowrap',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            zIndex: 10,
-          }}
-          className="nodrag nopan"
-        >
-          {displayLabel}
-        </div>
-
+        {/* Маркировка у источника */}
         {sourceLabel && (
           <div
             style={{
               position: 'absolute',
               transform: `translate(-50%, -50%) translate(${sourceOffsetX}px,${sourceOffsetY}px)`,
-              fontSize: badgeFontSize * 0.9,
-              fontWeight: 500,
-              color: badgeTextColor,
-              background: badgeBackgroundColor,
-              border: `${badgeBorderWidth}px solid ${badgeBorderColor}`,
-              borderRadius: badgeBorderRadius,
-              padding: '2px 6px',
-              pointerEvents: 'all',
-              whiteSpace: 'nowrap',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              zIndex: 10,
+              ...markerStyle,
             }}
             className="nodrag nopan"
           >
@@ -111,28 +109,31 @@ const CableEdge: FC<any> = ({
           </div>
         )}
 
+        {/* Маркировка у приёмника */}
         {targetLabel && (
           <div
             style={{
               position: 'absolute',
               transform: `translate(-50%, -50%) translate(${targetOffsetX}px,${targetOffsetY}px)`,
-              fontSize: badgeFontSize * 0.9,
-              fontWeight: 500,
-              color: badgeTextColor,
-              background: badgeBackgroundColor,
-              border: `${badgeBorderWidth}px solid ${badgeBorderColor}`,
-              borderRadius: badgeBorderRadius,
-              padding: '2px 6px',
-              pointerEvents: 'all',
-              whiteSpace: 'nowrap',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              zIndex: 10,
+              ...markerStyle,
             }}
             className="nodrag nopan"
           >
             {targetLabel}
           </div>
         )}
+
+        {/* Основной бейдж типа сигнала */}
+        <div
+          style={{
+            position: 'absolute',
+            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+            ...mainBadgeStyle,
+          }}
+          className="nodrag nopan"
+        >
+          {displayLabel}
+        </div>
       </EdgeLabelRenderer>
     </>
   );
