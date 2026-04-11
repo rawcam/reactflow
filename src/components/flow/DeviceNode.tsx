@@ -48,7 +48,6 @@ const DeviceNode = ({ id, data, selected }: NodeProps<DeviceNodeData>) => {
   const totalPoE = data.totalPoEConsumption ?? 0;
   const maxRows = Math.max(data.inputs.length, data.outputs.length);
 
-  // Динамическое смещение хендлов с учётом padding (12px) + borderWidth + 8px выступ
   const handleLeftOffset = 12 + borderWidth + 8;
   const handleRightOffset = 12 + borderWidth + 8;
 
