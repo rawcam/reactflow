@@ -231,7 +231,7 @@ body {
   display: none !important;
 }
 
-/* ГАРАНТИРОВАННО ТОНКИЕ ХЕНДЛЫ */
+/* Глобальные стили для хендлов: тонкая полоска 8x1 пикселей, выступ за границу на 8px */
 .react-flow__handle {
   width: 8px !important;
   height: 1px !important;
@@ -244,9 +244,11 @@ body {
   background: inherit !important;
   transform: translateY(-50%) !important;
 }
+
 .react-flow__handle-left {
-  left: -20px !important;
+  left: -8px !important;
 }
+
 .react-flow__handle-right {
-  right: -20px !important;
+  right: -8px !important;
 }
