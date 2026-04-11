@@ -231,6 +231,11 @@ body {
   display: none !important;
 }
 
+/* Гарантируем, что нода не обрезает выступающие хендлы */
+.react-flow__node {
+  overflow: visible !important;
+}
+
 /* Глобальные стили для хендлов: тонкая полоска 8x1 пикселей, выступ за границу на 8px */
 .react-flow__handle {
   width: 8px !important;
@@ -241,8 +246,9 @@ body {
   max-height: 1px !important;
   border-radius: 0 !important;
   border: none !important;
-  background: inherit !important;
+  /* Убираем background: inherit, чтобы работал инлайн-стиль */
   transform: translateY(-50%) !important;
+  z-index: 10 !important; /* чтобы быть поверх текста и других элементов */
 }
 
 .react-flow__handle-left {
