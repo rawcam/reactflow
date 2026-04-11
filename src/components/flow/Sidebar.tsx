@@ -15,6 +15,9 @@ interface SidebarProps {
   onNewSchema: () => void;
   onSaveSchema: () => void;
   onExportSVG: () => void;
+  onSaveToFile: () => void;
+  onLoadFromFile: () => void;
+  onAddNode: () => void;
   gridSettings: any;
   onUpdateGridVariant: (variant: string) => void;
   onUpdateGridGap: (gap: number) => void;
@@ -41,6 +44,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   onNewSchema,
   onSaveSchema,
   onExportSVG,
+  onSaveToFile,
+  onLoadFromFile,
+  onAddNode,
   gridSettings,
   onUpdateGridVariant,
   onUpdateGridGap,
@@ -53,7 +59,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   collapsed,
   onToggleCollapse,
 }) => {
-  // Настройки ноды
   const [localNodeSettings, setLocalNodeSettings] = useState({
     borderWidth: 1,
     borderRadius: 8,
@@ -65,7 +70,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     headerFontWeight: 'normal' as 'normal' | 'bold',
   });
 
-  // Настройки ребра
   const [localEdgeSettings, setLocalEdgeSettings] = useState({
     badgeFontSize: 10,
     badgeTextColor: '#2563eb',
@@ -160,6 +164,9 @@ const Sidebar: React.FC<SidebarProps> = ({
               <button onClick={onSaveSchema}><i className="fas fa-save"></i> Сохранить</button>
               <button onClick={onNewSchema}><i className="fas fa-file"></i> Новая</button>
               <button onClick={onExportSVG}><i className="fas fa-camera"></i> Экспорт</button>
+              <button onClick={onSaveToFile}><i className="fas fa-download"></i> В файл</button>
+              <button onClick={onLoadFromFile}><i className="fas fa-upload"></i> Из файла</button>
+              <button onClick={onAddNode} style={{ gridColumn: 'span 2' }}><i className="fas fa-plus"></i> Добавить устройство</button>
             </div>
           </div>
         )}
