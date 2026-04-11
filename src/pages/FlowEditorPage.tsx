@@ -13,8 +13,8 @@ import ReactFlow, {
   ConnectionLineType,
   useOnSelectionChange,
   reconnectEdge,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import DeviceNode from '../components/flow/DeviceNode';
 import CableEdge from '../components/flow/CableEdge';
 import EditNodeModal from '../components/flow/EditNodeModal';
