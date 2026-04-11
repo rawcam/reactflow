@@ -3,11 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { Node, Edge } from '@xyflow/react';
 import { DeviceNodeData, CableEdgeData } from '../../types/flowTypes';
 
+// Палитра: чёрный, белый, 5 оттенков серого, 7 цветов радуги
 const COLOR_PALETTE = [
-  '#2563eb', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899',
-  '#06b6d4', '#84cc16', '#f97316', '#6366f1', '#14b8a6', '#d946ef',
-  '#0ea5e9', '#f43f5e', '#a3e635', '#ff6900', '#00d084', '#8c78f0',
-  '#fcb900', '#7bdcb5', '#abb8c3', '#ff858d', '#6c4b3e', '#4b5563'
+  '#000000', '#ffffff',
+  '#9ca3af', '#6b7280', '#4b5563', '#374151', '#1f2937',
+  '#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6',
 ];
 
 interface SidebarProps {
@@ -159,6 +159,58 @@ const Sidebar: React.FC<SidebarProps> = ({
   const resetEdgeColor = (key: keyof typeof localEdgeSettings, defaultColor: string) => {
     handleEdgeSettingChange(key, defaultColor);
   };
+
+  // Компонент выбора цвета с RGB-пикером, HEX-полем и сеткой
+  const ColorPickerWithPalette = ({
+    value,
+    onChange,
+    onReset,
+    defaultColor,
+  }: {
+    value: string;
+    onChange: (color: string) => void;
+    onReset: () => void;
+    defaultColor: string;
+  }) => (
+    <div>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          style={{ width: '40px', height: '30px', padding: '2px', borderRadius: '6px', border: '1px solid var(--border-light)' }}
+        />
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          style={{ flex: 1, padding: '4px 8px', fontSize: '11px', borderRadius: '6px', border: '1px solid var(--border-light)', background: 'var(--bg-panel)', color: 'var(--text-primary)' }}
+        />
+        <button
+          onClick={onReset}
+          style={{ padding: '4px 8px', fontSize: '11px', background: 'var(--card-bg)', border: '1px solid var(--border-light)', borderRadius: '6px', cursor: 'pointer' }}
+        >
+          Сброс
+        </button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px' }}>
+        {COLOR_PALETTE.map(c => (
+          <div
+            key={c}
+            style={{
+              width: '24px',
+              height: '24px',
+              background: c,
+              borderRadius: '6px',
+              cursor: 'pointer',
+              border: value === c ? '2px solid var(--text-primary)' : '1px solid var(--border-light)',
+            }}
+            onClick={() => onChange(c)}
+          />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className={`sidebar ${collapsed ? 'collapsed' : ''} ${theme}`}>
@@ -359,28 +411,12 @@ const Sidebar: React.FC<SidebarProps> = ({
               />
 
               <label>Цвет обводки</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px', marginTop: '4px' }}>
-                {COLOR_PALETTE.map(c => (
-                  <div
-                    key={c}
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      background: c,
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      border: selectedNode?.data.color === c ? '2px solid var(--text-primary)' : '1px solid var(--border-light)',
-                    }}
-                    onClick={() => onUpdateNode(selectedNode!.id, { color: c })}
-                  />
-                ))}
-              </div>
-              <button
-                onClick={resetNodeColor}
-                style={{ marginTop: '8px', fontSize: '11px', padding: '4px', background: 'var(--card-bg)', border: '1px solid var(--border-light)', borderRadius: '4px', cursor: 'pointer' }}
-              >
-                Сбросить цвет
-              </button>
+              <ColorPickerWithPalette
+                value={selectedNode.data.color || '#2563eb'}
+                onChange={(color) => onUpdateNode(selectedNode.id, { color })}
+                onReset={resetNodeColor}
+                defaultColor="#2563eb"
+              />
 
               <button
                 onClick={handleApplyToAll}
@@ -450,76 +486,28 @@ const Sidebar: React.FC<SidebarProps> = ({
               />
 
               <label>Цвет текста / заливки</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px', marginTop: '4px' }}>
-                {COLOR_PALETTE.map(c => (
-                  <div
-                    key={c}
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      background: c,
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      border: localEdgeSettings.badgeTextColor === c ? '2px solid var(--text-primary)' : '1px solid var(--border-light)',
-                    }}
-                    onClick={() => handleEdgeSettingChange('badgeTextColor', c)}
-                  />
-                ))}
-              </div>
-              <button
-                onClick={() => resetEdgeColor('badgeTextColor', '#2563eb')}
-                style={{ marginTop: '4px', marginBottom: '8px', fontSize: '11px', padding: '4px', background: 'var(--card-bg)', border: '1px solid var(--border-light)', borderRadius: '4px', cursor: 'pointer' }}
-              >
-                Сбросить
-              </button>
+              <ColorPickerWithPalette
+                value={localEdgeSettings.badgeTextColor}
+                onChange={(color) => handleEdgeSettingChange('badgeTextColor', color)}
+                onReset={() => resetEdgeColor('badgeTextColor', '#2563eb')}
+                defaultColor="#2563eb"
+              />
 
               <label>Цвет обводки</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px', marginTop: '4px' }}>
-                {COLOR_PALETTE.map(c => (
-                  <div
-                    key={c}
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      background: c,
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      border: localEdgeSettings.badgeBorderColor === c ? '2px solid var(--text-primary)' : '1px solid var(--border-light)',
-                    }}
-                    onClick={() => handleEdgeSettingChange('badgeBorderColor', c)}
-                  />
-                ))}
-              </div>
-              <button
-                onClick={() => resetEdgeColor('badgeBorderColor', '#2563eb')}
-                style={{ marginTop: '4px', marginBottom: '8px', fontSize: '11px', padding: '4px', background: 'var(--card-bg)', border: '1px solid var(--border-light)', borderRadius: '4px', cursor: 'pointer' }}
-              >
-                Сбросить
-              </button>
+              <ColorPickerWithPalette
+                value={localEdgeSettings.badgeBorderColor}
+                onChange={(color) => handleEdgeSettingChange('badgeBorderColor', color)}
+                onReset={() => resetEdgeColor('badgeBorderColor', '#2563eb')}
+                defaultColor="#2563eb"
+              />
 
               <label>Фон маркировок</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px', marginTop: '4px' }}>
-                {COLOR_PALETTE.map(c => (
-                  <div
-                    key={c}
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      background: c,
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      border: localEdgeSettings.badgeBackgroundColor === c ? '2px solid var(--text-primary)' : '1px solid var(--border-light)',
-                    }}
-                    onClick={() => handleEdgeSettingChange('badgeBackgroundColor', c)}
-                  />
-                ))}
-              </div>
-              <button
-                onClick={() => resetEdgeColor('badgeBackgroundColor', '#ffffff')}
-                style={{ marginTop: '4px', fontSize: '11px', padding: '4px', background: 'var(--card-bg)', border: '1px solid var(--border-light)', borderRadius: '4px', cursor: 'pointer' }}
-              >
-                Сбросить
-              </button>
+              <ColorPickerWithPalette
+                value={localEdgeSettings.badgeBackgroundColor}
+                onChange={(color) => handleEdgeSettingChange('badgeBackgroundColor', color)}
+                onReset={() => resetEdgeColor('badgeBackgroundColor', '#ffffff')}
+                defaultColor="#ffffff"
+              />
 
               <label>Скругление (px)</label>
               <input
