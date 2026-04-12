@@ -1,126 +1,184 @@
 // src/utils/exportToDxf.ts
 import { Node, Edge } from '@xyflow/react';
 import { DeviceNodeData, CableEdgeData } from '../types/flowTypes';
+import { getSmoothStepPath } from '@xyflow/react';
 
-// Простая ручная генерация DXF (формат R12, совместим со всеми CAD)
+// Преобразование координаты Y (инверсия для DXF)
+const toDxfY = (y: number, maxY: number) => maxY - y;
+
+// Генерация ортогонального пути (как в React Flow)
+const generateOrthoPath = (
+  sourceX: number, sourceY: number,
+  targetX: number, targetY: number,
+  sourcePos: any, targetPos: any
+): string => {
+  const [path] = getSmoothStepPath({
+    sourceX, sourceY, targetX, targetY,
+    sourcePosition: sourcePos,
+    targetPosition: targetPos,
+    borderRadius: 0,
+  });
+  return path;
+};
+
+// Разбор SVG-пути на массив точек
+const parseSvgPathToSegments = (path: string): { x: number; y: number }[] => {
+  const points: { x: number; y: number }[] = [];
+  const commands = path.match(/[MLC]\s*[\d.]+\s*[\d.]+/g) || [];
+  commands.forEach(cmd => {
+    const parts = cmd.match(/[\d.]+/g);
+    if (parts && parts.length >= 2) {
+      points.push({ x: parseFloat(parts[0]), y: parseFloat(parts[1]) });
+    }
+  });
+  return points;
+};
+
+// Маппинг HEX → AutoCAD Color Index (ACI)
+const mapColorToAci = (hex: string): number => {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  if (r === 37 && g === 99 && b === 235) return 5;   // #2563eb → синий
+  if (r === 239 && g === 68 && b === 68) return 1;   // #ef4444 → красный
+  if (r === 16 && g === 185 && b === 129) return 3;  // #10b981 → зелёный
+  if (r === 0 && g === 0 && b === 0) return 7;       // чёрный
+  if (r === 255 && g === 255 && b === 255) return 7; // белый
+  const brightness = r * 0.299 + g * 0.587 + b * 0.114;
+  return brightness > 128 ? 7 : 0;
+};
+
+// Основная функция генерации DXF
 const generateDxfString = (
   nodes: Node<DeviceNodeData>[],
   edges: Edge<CableEdgeData>[]
 ): string => {
   const lines: string[] = [];
-
-  // Заголовок DXF
-  lines.push('0');
-  lines.push('SECTION');
-  lines.push('2');
-  lines.push('ENTITIES');
-
-  // Находим максимальный Y для инверсии оси
   let maxY = 0;
-  nodes.forEach((node) => {
-    const h = (node.data.height as number) || 90;
-    maxY = Math.max(maxY, node.position.y + h);
+  nodes.forEach(n => {
+    const h = (n.data.height as number) || 90;
+    maxY = Math.max(maxY, n.position.y + h);
   });
   maxY += 100;
 
-  const toDxfY = (y: number) => maxY - y;
+  lines.push('0', 'SECTION', '2', 'ENTITIES');
 
-  // --- Рёбра (линии) ---
-  edges.forEach((edge) => {
-    const sourceNode = nodes.find((n) => n.id === edge.source);
-    const targetNode = nodes.find((n) => n.id === edge.target);
+  // --- Рёбра ---
+  edges.forEach(edge => {
+    const sourceNode = nodes.find(n => n.id === edge.source);
+    const targetNode = nodes.find(n => n.id === edge.target);
     if (!sourceNode || !targetNode) return;
 
-    const x1 = sourceNode.position.x + ((sourceNode.data.width as number) || 90) / 2;
-    const y1 = sourceNode.position.y + ((sourceNode.data.height as number) || 90) / 2;
-    const x2 = targetNode.position.x + ((targetNode.data.width as number) || 90) / 2;
-    const y2 = targetNode.position.y + ((targetNode.data.height as number) || 90) / 2;
+    const sourceHandleId = edge.sourceHandle;
+    const targetHandleId = edge.targetHandle;
 
-    lines.push('0');
-    lines.push('LINE');
-    lines.push('8'); // Слой 0
-    lines.push('0');
-    lines.push('10');
-    lines.push(x1.toFixed(4));
-    lines.push('20');
-    lines.push(toDxfY(y1).toFixed(4));
-    lines.push('30');
-    lines.push('0.0');
-    lines.push('11');
-    lines.push(x2.toFixed(4));
-    lines.push('21');
-    lines.push(toDxfY(y2).toFixed(4));
-    lines.push('31');
-    lines.push('0.0');
+    let sourceX = sourceNode.position.x;
+    let sourceY = sourceNode.position.y;
+    let targetX = targetNode.position.x;
+    let targetY = targetNode.position.y;
+
+    const sourceInterface = sourceHandleId
+      ? [...sourceNode.data.inputs, ...sourceNode.data.outputs].find(i => i.id === sourceHandleId)
+      : null;
+    const targetInterface = targetHandleId
+      ? [...targetNode.data.inputs, ...targetNode.data.outputs].find(i => i.id === targetHandleId)
+      : null;
+
+    if (sourceInterface) {
+      const idx = [...sourceNode.data.inputs, ...sourceNode.data.outputs].findIndex(i => i.id === sourceHandleId);
+      const maxRows = Math.max(sourceNode.data.inputs.length, sourceNode.data.outputs.length);
+      const rowHeight = 22;
+      const offsetY = (idx + 0.5) * rowHeight + 40;
+      sourceY = sourceNode.position.y + offsetY;
+      sourceX = sourceNode.position.x + ((sourceNode.data.width as number) || 90);
+    } else {
+      sourceX = sourceNode.position.x + ((sourceNode.data.width as number) || 90) / 2;
+      sourceY = sourceNode.position.y + ((sourceNode.data.height as number) || 90) / 2;
+    }
+
+    if (targetInterface) {
+      const idx = [...targetNode.data.inputs, ...targetNode.data.outputs].findIndex(i => i.id === targetHandleId);
+      const maxRows = Math.max(targetNode.data.inputs.length, targetNode.data.outputs.length);
+      const rowHeight = 22;
+      const offsetY = (idx + 0.5) * rowHeight + 40;
+      targetY = targetNode.position.y + offsetY;
+      targetX = targetNode.position.x;
+    } else {
+      targetX = targetNode.position.x + ((targetNode.data.width as number) || 90) / 2;
+      targetY = targetNode.position.y + ((targetNode.data.height as number) || 90) / 2;
+    }
+
+    const path = generateOrthoPath(
+      sourceX, sourceY, targetX, targetY,
+      sourceInterface ? 'right' : 'bottom',
+      targetInterface ? 'left' : 'bottom'
+    );
+    const segments = parseSvgPathToSegments(path);
+
+    for (let i = 0; i < segments.length - 1; i++) {
+      const p1 = segments[i];
+      const p2 = segments[i+1];
+      lines.push('0', 'LINE', '8', '0');
+      lines.push('10', p1.x.toFixed(4), '20', toDxfY(p1.y, maxY).toFixed(4), '30', '0.0');
+      lines.push('11', p2.x.toFixed(4), '21', toDxfY(p2.y, maxY).toFixed(4), '31', '0.0');
+      const color = edge.data?.edgeStrokeColor || '#2563eb';
+      const width = edge.data?.edgeStrokeWidth || 2;
+      lines.push('62', mapColorToAci(color).toString());
+      lines.push('370', (width / 10).toFixed(1));
+    }
+
+    const labelPos = segments[Math.floor(segments.length / 2)];
+    if (labelPos) {
+      const text = edge.data?.labelText || edge.data?.cableType || 'Cable';
+      lines.push('0', 'TEXT', '8', '0');
+      lines.push('10', (labelPos.x + 5).toFixed(4), '20', toDxfY(labelPos.y - 10, maxY).toFixed(4), '30', '0.0');
+      lines.push('40', '8.0');
+      lines.push('1', text);
+      lines.push('62', mapColorToAci(edge.data?.badgeTextColor || '#2563eb').toString());
+    }
   });
 
-  // --- Ноды (прямоугольники и текст) ---
-  nodes.forEach((node) => {
+  // --- Ноды ---
+  nodes.forEach(node => {
     const w = (node.data.width as number) || 90;
     const h = (node.data.height as number) || 90;
     const x = node.position.x;
     const y = node.position.y;
 
-    const pts = [
-      [x, y],
-      [x + w, y],
-      [x + w, y + h],
-      [x, y + h],
-    ];
-
-    // Полилиния (замкнутая)
-    lines.push('0');
-    lines.push('POLYLINE');
-    lines.push('8');
-    lines.push('0');
-    lines.push('66');
-    lines.push('1');
-    lines.push('70');
-    lines.push('1'); // замкнутая
-
+    const pts = [[x,y], [x+w,y], [x+w,y+h], [x,y+h]];
+    lines.push('0', 'POLYLINE', '8', '0', '66', '1', '70', '1');
     pts.forEach(([px, py]) => {
-      lines.push('0');
-      lines.push('VERTEX');
-      lines.push('8');
-      lines.push('0');
-      lines.push('10');
-      lines.push(px.toFixed(4));
-      lines.push('20');
-      lines.push(toDxfY(py).toFixed(4));
-      lines.push('30');
-      lines.push('0.0');
+      lines.push('0', 'VERTEX', '8', '0', '10', px.toFixed(4), '20', toDxfY(py, maxY).toFixed(4), '30', '0.0');
     });
+    lines.push('0', 'SEQEND', '8', '0');
+    lines.push('62', mapColorToAci(node.data.color || '#2563eb').toString());
+    lines.push('370', ((node.data.borderWidth || 1) / 10).toFixed(1));
 
-    lines.push('0');
-    lines.push('SEQEND');
-    lines.push('8');
-    lines.push('0');
+    lines.push('0', 'TEXT', '8', '0');
+    lines.push('10', (x + 5).toFixed(4), '20', toDxfY(y + 15, maxY).toFixed(4), '30', '0.0');
+    lines.push('40', '10.0');
+    lines.push('1', node.data.label);
+    lines.push('62', '7');
 
-    // Текст метки
-    const textX = x + 5;
-    const textY = y + 15;
-    lines.push('0');
-    lines.push('TEXT');
-    lines.push('8');
-    lines.push('0');
-    lines.push('10');
-    lines.push(textX.toFixed(4));
-    lines.push('20');
-    lines.push(toDxfY(textY).toFixed(4));
-    lines.push('30');
-    lines.push('0.0');
-    lines.push('40');
-    lines.push('10.0'); // высота текста
-    lines.push('1');
-    lines.push(node.data.label);
+    const rowHeight = 22;
+    const maxRows = Math.max(node.data.inputs.length, node.data.outputs.length);
+    node.data.inputs.forEach((input, idx) => {
+      const offsetY = y + 40 + (idx + 0.5) * rowHeight;
+      lines.push('0', 'CIRCLE', '8', '0');
+      lines.push('10', (x - 8).toFixed(4), '20', toDxfY(offsetY, maxY).toFixed(4), '30', '0.0');
+      lines.push('40', '3.0');
+      lines.push('62', mapColorToAci(node.data.color || '#2563eb').toString());
+    });
+    node.data.outputs.forEach((output, idx) => {
+      const offsetY = y + 40 + (idx + 0.5) * rowHeight;
+      lines.push('0', 'CIRCLE', '8', '0');
+      lines.push('10', (x + w + 8).toFixed(4), '20', toDxfY(offsetY, maxY).toFixed(4), '30', '0.0');
+      lines.push('40', '3.0');
+      lines.push('62', mapColorToAci(node.data.color || '#2563eb').toString());
+    });
   });
 
-  // Завершение
-  lines.push('0');
-  lines.push('ENDSEC');
-  lines.push('0');
-  lines.push('EOF');
-
+  lines.push('0', 'ENDSEC', '0', 'EOF');
   return lines.join('\n');
 };
 
