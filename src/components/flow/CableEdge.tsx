@@ -1,5 +1,5 @@
 // src/components/flow/CableEdge.tsx
-import { FC, useRef, useEffect } from 'react';
+import { FC } from 'react';
 import {
   getSmoothStepPath,
   BaseEdge,
@@ -64,15 +64,8 @@ const CableEdge: FC<any> = ({
     ...(style as React.CSSProperties),
   };
 
-  const edgeRef = useRef<SVGPathElement>(null);
-
-  // Принудительно применяем стили при каждом рендере
-  useEffect(() => {
-    if (edgeRef.current) {
-      edgeRef.current.style.stroke = selected ? '#ef4444' : edgeStrokeColor;
-      edgeRef.current.style.strokeWidth = `${edgeStrokeWidth}px`;
-    }
-  }, [selected, edgeStrokeColor, edgeStrokeWidth]);
+  // Ключ для принудительного пересоздания компонента при изменении стилей
+  const styleKey = `${edgeStrokeColor}-${edgeStrokeWidth}`;
 
   const getPointAtDistanceFromStart = (path: string, distance: number) => {
     const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -136,11 +129,10 @@ const CableEdge: FC<any> = ({
 
   return (
     <>
-      {/* @ts-ignore */}
       <BaseEdge
+        key={styleKey}
         id={id}
         path={edgePath}
-        ref={edgeRef}
         style={edgeStyle}
         markerEnd={markerEnd}
         markerStart={markerStart}
