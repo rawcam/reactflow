@@ -1,7 +1,7 @@
 // src/components/flow/Sidebar.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { Node, Edge } from '@xyflow/react';
+import type { Node, Edge } from '@xyflow/react';
 import { DeviceNodeData, CableEdgeData } from '../../types/flowTypes';
 
 const COLOR_PALETTE = [
@@ -225,7 +225,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       return () => sidebar.removeEventListener('scroll', handleScroll);
     }, [expanded]);
 
-    const pickerContent = expanded && (
+    const pickerContent = expanded && ReactDOM.createPortal(
       <div
         ref={pickerRef}
         style={{
@@ -266,7 +266,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           ))}
         </div>
         <button onClick={onReset} style={{ marginTop: '8px', width: '100%', padding: '4px', cursor: 'pointer' }}>Сбросить</button>
-      </div>
+      </div>,
+      document.body
     );
 
     return (
