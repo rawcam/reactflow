@@ -58,11 +58,11 @@ const CableEdge: FC<any> = ({
       ? `${d.cableType} (${d.adapter})`
       : d.cableType || 'Cable';
 
-  // CSS-переменные, которые React Flow подхватит для видимого path
+  // Применяем CSS-переменные React Flow для гарантированного управления стилями
   const edgeStyle = {
     ...(style as React.CSSProperties),
     '--xy-edge-stroke': selected ? '#ef4444' : edgeStrokeColor,
-    '--xy-edge-stroke-width': edgeStrokeWidth,
+    '--xy-edge-stroke-width': `${edgeStrokeWidth}px`,
   } as React.CSSProperties;
 
   const getPointAtDistanceFromStart = (path: string, distance: number) => {
