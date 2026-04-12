@@ -80,32 +80,38 @@ const EditNodeModal: React.FC<EditNodeModalProps> = ({ isOpen, node, onClose, on
   const handleSave = () => {
     let updated: DeviceNodeData = { ...editedData };
 
-    // Для сетевого коммутатора генерируем inputs на основе конфигурации
     if (updated.deviceType === 'network_switch') {
       const cfg = updated.networkSwitchConfig || { numPorts: 24, poePorts: 0, sfpPorts: 0, speed: '1G', portLayout: 'odd_left' };
       const inputs: DeviceInterface[] = [];
+      const outputs: DeviceInterface[] = [];
+      const oddLeft = cfg.portLayout === 'odd_left';
+
       for (let i = 1; i <= cfg.numPorts; i++) {
         const poe = i <= cfg.poePorts;
-        inputs.push({
-          id: `sw-in-${i}-${Date.now()}`,
+        const iface: DeviceInterface = {
+          id: `sw-port-${i}-${Date.now()}`,
           name: `Порт ${i}${poe ? ' PoE' : ''}`,
-          direction: 'input',
+          direction: oddLeft ? (i % 2 === 1 ? 'input' : 'output') : (i % 2 === 1 ? 'output' : 'input'),
           connector: 'RJ45',
           protocol: 'Ethernet',
           poe,
           poePower: poe ? 30 : undefined,
-        });
+        };
+        if (iface.direction === 'input') inputs.push(iface);
+        else outputs.push(iface);
       }
       for (let i = 1; i <= cfg.sfpPorts; i++) {
-        inputs.push({
+        const iface: DeviceInterface = {
           id: `sw-sfp-${i}-${Date.now()}`,
           name: `SFP ${i}`,
-          direction: 'input',
+          direction: oddLeft ? (i % 2 === 1 ? 'input' : 'output') : (i % 2 === 1 ? 'output' : 'input'),
           connector: 'RJ45',
           protocol: 'Ethernet',
-        });
+        };
+        if (iface.direction === 'input') inputs.push(iface);
+        else outputs.push(iface);
       }
-      updated = { ...updated, inputs, outputs: [] };
+      updated = { ...updated, inputs, outputs };
     }
 
     const totalPoE = [...updated.inputs, ...updated.outputs].reduce((sum, iface) => sum + (iface.poePower || 0), 0);
