@@ -109,7 +109,7 @@ const DeviceNode = ({ id, data, selected }: any) => {
                       id={input.id}
                       style={{
                         background: effectiveBorderColor,
-                        top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
+                        top: '50%',
                         left: -handleLeftOffset,
                         transform: 'translateY(-50%)',
                         width: 8,
@@ -130,7 +130,7 @@ const DeviceNode = ({ id, data, selected }: any) => {
                       id={output.id}
                       style={{
                         background: effectiveBorderColor,
-                        top: `${((rowIndex + 0.5) / maxRows) * 100}%`,
+                        top: '50%',
                         right: -handleRightOffset,
                         transform: 'translateY(-50%)',
                         width: 8,
