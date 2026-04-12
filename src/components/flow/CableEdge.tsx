@@ -2,6 +2,7 @@
 import { FC } from 'react';
 import {
   getSmoothStepPath,
+  BaseEdge,
   EdgeLabelRenderer,
 } from '@xyflow/react';
 import { CableEdgeData } from '../../types/flowTypes';
@@ -57,7 +58,13 @@ const CableEdge: FC<any> = ({
       ? `${d.cableType} (${d.adapter})`
       : d.cableType || 'Cable';
 
-  // Функции для получения точки на пути
+  // CSS-переменные, которые React Flow подхватит для видимого path
+  const edgeStyle = {
+    ...(style as React.CSSProperties),
+    '--xy-edge-stroke': selected ? '#ef4444' : edgeStrokeColor,
+    '--xy-edge-stroke-width': edgeStrokeWidth,
+  } as React.CSSProperties;
+
   const getPointAtDistanceFromStart = (path: string, distance: number) => {
     const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -118,40 +125,15 @@ const CableEdge: FC<any> = ({
     justifyContent: 'center',
   };
 
-  // Стили линии — применяются напрямую к <path>
-  const lineStyle: React.CSSProperties = {
-    fill: 'none',
-    stroke: selected ? '#ef4444' : edgeStrokeColor,
-    strokeWidth: edgeStrokeWidth,
-    ...(style as React.CSSProperties),
-  };
-
   return (
     <>
-      {/* Рендерим линию в EdgeLabelRenderer, чтобы гарантированно управлять стилями */}
-      <EdgeLabelRenderer>
-        <svg
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            pointerEvents: 'none',
-            zIndex: 0,
-          }}
-        >
-          <path
-            id={id}
-            d={edgePath}
-            style={lineStyle}
-            markerEnd={markerEnd}
-            markerStart={markerStart}
-          />
-        </svg>
-      </EdgeLabelRenderer>
-
-      {/* Метки и бейджи */}
+      <BaseEdge
+        id={id}
+        path={edgePath}
+        style={edgeStyle}
+        markerEnd={markerEnd}
+        markerStart={markerStart}
+      />
       <EdgeLabelRenderer>
         {sourceLabel && (
           <div style={{ ...markerStyle, left: sourcePos.x, top: sourcePos.y }} className="nodrag nopan">
