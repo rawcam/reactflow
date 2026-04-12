@@ -273,7 +273,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     return (
       <>
         <div ref={buttonRef} onClick={handleToggle} style={{
-          width: '32px', height: '32px', background: value, borderRadius: '8px',
+          width: '28px', height: '28px', background: value, borderRadius: '6px',
           border: '1px solid var(--border-light)', cursor: 'pointer', flexShrink: 0
         }} />
         {pickerContent}
@@ -350,28 +350,94 @@ const Sidebar: React.FC<SidebarProps> = ({
       {selectedNode && !collapsed && (
         <div className="sidebar-section">
           <div className="section-header" onClick={() => setShowNodeStyle(!showNodeStyle)}>
-            <span><i className="fas fa-paint-brush"></i> Свойства устройства</span>
+            <span><i className="fas fa-sliders-h"></i> Свойства</span>
             <i className={`fas fa-chevron-${showNodeStyle ? 'down' : 'right'}`}></i>
           </div>
           {showNodeStyle && (
             <div className="section-content">
-              <label>Обводка (px)</label>
-              <input type="number" min="0" max="10" step="0.5" value={localNodeSettings.borderWidth} onChange={(e) => handleNodeSettingChange('borderWidth', Number(e.target.value))} />
-              <label>Скругление (px)</label>
-              <input type="number" min="0" max="20" value={localNodeSettings.borderRadius} onChange={(e) => handleNodeSettingChange('borderRadius', Number(e.target.value))} />
-              <label>Размер заголовка (px)</label>
-              <input type="number" min="8" max="20" value={localNodeSettings.headerFontSize} onChange={(e) => handleNodeSettingChange('headerFontSize', Number(e.target.value))} />
-              <label>Жирность заголовка</label>
-              <select value={localNodeSettings.headerFontWeight} onChange={(e) => handleNodeSettingChange('headerFontWeight', e.target.value)}>
-                <option value="normal">Обычный</option>
-                <option value="bold">Жирный</option>
-              </select>
-              <label>Размер портов (px)</label>
-              <input type="number" min="4" max="12" value={localNodeSettings.portFontSize} onChange={(e) => handleNodeSettingChange('portFontSize', Number(e.target.value))} />
-              <label>Цвет обводки</label>
-              <ColorPickerCompact value={localNodeColor} onChange={handleNodeColorChange} onReset={resetNodeColor} defaultColor="#2563eb" />
-              <button onClick={handleApplyToAll} style={{ marginTop: '12px', padding: '6px', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', width: '100%' }}>
-                {applyingAll ? '✓ Применено!' : 'Применить ко всем нодам'}
+              <div className="compact-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <label style={{ fontSize: 13, color: '#334155' }}>Цвет</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <ColorPickerCompact value={localNodeColor} onChange={handleNodeColorChange} onReset={resetNodeColor} defaultColor="#2563eb" />
+                  <input
+                    type="text"
+                    value={localNodeColor}
+                    onChange={(e) => handleNodeColorChange(e.target.value)}
+                    style={{ width: 90, padding: '6px 8px', fontSize: 13, border: '1px solid var(--border-light)', borderRadius: 10, background: 'var(--bg-panel)', color: 'var(--text-primary)' }}
+                  />
+                </div>
+              </div>
+              <div className="compact-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <label style={{ fontSize: 13, color: '#334155' }}>Обводка (px)</label>
+                <input
+                  type="number"
+                  min="0" max="10" step="0.5"
+                  value={localNodeSettings.borderWidth}
+                  onChange={(e) => handleNodeSettingChange('borderWidth', Number(e.target.value))}
+                  style={{ width: 100, padding: '6px 8px', fontSize: 13, border: '1px solid var(--border-light)', borderRadius: 10, background: 'var(--bg-panel)', color: 'var(--text-primary)', textAlign: 'right' }}
+                />
+              </div>
+              <div className="compact-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <label style={{ fontSize: 13, color: '#334155' }}>Скругление (px)</label>
+                <input
+                  type="number"
+                  min="0" max="20"
+                  value={localNodeSettings.borderRadius}
+                  onChange={(e) => handleNodeSettingChange('borderRadius', Number(e.target.value))}
+                  style={{ width: 100, padding: '6px 8px', fontSize: 13, border: '1px solid var(--border-light)', borderRadius: 10, background: 'var(--bg-panel)', color: 'var(--text-primary)', textAlign: 'right' }}
+                />
+              </div>
+              <div className="compact-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <label style={{ fontSize: 13, color: '#334155' }}>Заголовок (px)</label>
+                <input
+                  type="number"
+                  min="8" max="20"
+                  value={localNodeSettings.headerFontSize}
+                  onChange={(e) => handleNodeSettingChange('headerFontSize', Number(e.target.value))}
+                  style={{ width: 100, padding: '6px 8px', fontSize: 13, border: '1px solid var(--border-light)', borderRadius: 10, background: 'var(--bg-panel)', color: 'var(--text-primary)', textAlign: 'right' }}
+                />
+              </div>
+              <div className="compact-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <label style={{ fontSize: 13, color: '#334155' }}>Стиль шрифта</label>
+                <select
+                  value={localNodeSettings.headerFontWeight}
+                  onChange={(e) => handleNodeSettingChange('headerFontWeight', e.target.value)}
+                  style={{ width: 110, padding: '6px 8px', fontSize: 13, border: '1px solid var(--border-light)', borderRadius: 10, background: 'var(--bg-panel)', color: 'var(--text-primary)' }}
+                >
+                  <option value="normal">Обычный</option>
+                  <option value="bold">Полужирный</option>
+                </select>
+              </div>
+              <div className="compact-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <label style={{ fontSize: 13, color: '#334155' }}>Порты (px)</label>
+                <input
+                  type="number"
+                  min="4" max="12"
+                  value={localNodeSettings.portFontSize}
+                  onChange={(e) => handleNodeSettingChange('portFontSize', Number(e.target.value))}
+                  style={{ width: 100, padding: '6px 8px', fontSize: 13, border: '1px solid var(--border-light)', borderRadius: 10, background: 'var(--bg-panel)', color: 'var(--text-primary)', textAlign: 'right' }}
+                />
+              </div>
+              <button
+                onClick={handleApplyToAll}
+                style={{
+                  marginTop: 8,
+                  padding: '8px 12px',
+                  background: 'var(--accent)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '40px',
+                  cursor: 'pointer',
+                  width: '100%',
+                  fontWeight: 500,
+                  fontSize: 13,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                }}
+              >
+                <i className="fas fa-paint-brush"></i> {applyingAll ? '✓ Применено!' : 'Применить стиль ко всем'}
               </button>
             </div>
           )}
