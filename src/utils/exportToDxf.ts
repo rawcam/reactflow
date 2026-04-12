@@ -4,16 +4,11 @@ import { DeviceNodeData, CableEdgeData } from '../types/flowTypes';
 // @ts-ignore
 import Drawing from 'dxf-writer';
 
-interface Point {
-  x: number;
-  y: number;
-}
-
 // Конвертация координат React Flow в DXF (ось Y инвертируется)
-const toDxfCoord = (x: number, y: number, maxY: number = 1000): Point => ({
-  x: x,
-  y: maxY - y,
-});
+const toDxfCoord = (x: number, y: number, maxY: number = 1000): [number, number] => [
+  x,
+  maxY - y,
+];
 
 // Определяем границы схемы для масштабирования
 const getBounds = (nodes: Node<DeviceNodeData>[]) => {
@@ -55,8 +50,7 @@ export const exportToDxf = (
       maxY
     );
 
-    // Цвета в DXF задаются через индекс или RGB. Используем простой индекс.
-    d.drawLine(start.x, start.y, end.x, end.y);
+    d.drawLine(start[0], start[1], end[0], end[1]);
   });
 
   // Рисуем ноды
@@ -70,8 +64,8 @@ export const exportToDxf = (
 
     d.drawPolyline([p1, p2, p3, p4], true);
 
-    // Текст метки
-    d.drawText(node.data.label, p1.x + 5, p1.y + 15, 10);
+    // Текст метки (x, y, height, text, rotation, options)
+    d.drawText(p1[0] + 5, p1[1] + 15, 10, node.data.label, 0);
   });
 
   const dxfString = d.toDxfString();
