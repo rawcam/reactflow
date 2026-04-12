@@ -84,13 +84,23 @@ const Sidebar: React.FC<SidebarProps> = ({
     targetLabelText: '',
     edgeStrokeWidth: 2,
     edgeStrokeColor: '#2563eb',
+    // Основной бейдж
     badgeFontSize: 6,
     badgeTextColor: '#2563eb',
     badgeBorderColor: '#2563eb',
     badgeBorderWidth: 1,
     badgeBorderRadius: 12,
     badgeBackgroundColor: '#ffffff',
+    // Маркировки
+    markerFontSize: 5,
+    markerTextColor: '#2563eb',
+    markerBorderColor: '#2563eb',
+    markerBorderWidth: 1,
+    markerBorderRadius: 8,
+    markerBackgroundColor: '#ffffff',
   });
+
+  const [applyingAll, setApplyingAll] = useState(false);
 
   const [showManage, setShowManage] = useState(true);
   const [showGrid, setShowGrid] = useState(false);
@@ -124,7 +134,13 @@ const Sidebar: React.FC<SidebarProps> = ({
         badgeBorderColor: (d.badgeBorderColor as string) ?? '#2563eb',
         badgeBorderWidth: (d.badgeBorderWidth as number) ?? 1,
         badgeBorderRadius: (d.badgeBorderRadius as number) ?? 12,
-        badgeBackgroundColor: (d.badgeBackgroundColor as string) ?? 'var(--bg-panel)',
+        badgeBackgroundColor: (d.badgeBackgroundColor as string) ?? '#ffffff',
+        markerFontSize: (d.markerFontSize as number) ?? 5,
+        markerTextColor: (d.markerTextColor as string) ?? '#2563eb',
+        markerBorderColor: (d.markerBorderColor as string) ?? '#2563eb',
+        markerBorderWidth: (d.markerBorderWidth as number) ?? 1,
+        markerBorderRadius: (d.markerBorderRadius as number) ?? 8,
+        markerBackgroundColor: (d.markerBackgroundColor as string) ?? '#ffffff',
       });
     }
   }, [selectedEdge]);
@@ -155,6 +171,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         ...localNodeSettings,
         color: localNodeColor,
       });
+      setApplyingAll(true);
+      setTimeout(() => setApplyingAll(false), 1000);
     }
   };
 
@@ -179,11 +197,16 @@ const Sidebar: React.FC<SidebarProps> = ({
   }) => {
     const [expanded, setExpanded] = useState(false);
 
+    const handleToggle = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setExpanded(!expanded);
+    };
+
     return (
       <div style={{ position: 'relative', marginBottom: '8px' }}>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <div
-            onClick={() => setExpanded(!expanded)}
+            onClick={handleToggle}
             style={{
               width: '32px',
               height: '32px',
@@ -201,7 +224,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             style={{ flex: 1, padding: '6px 8px', fontSize: '12px', borderRadius: '6px', border: '1px solid var(--border-light)', background: 'var(--bg-panel)', color: 'var(--text-primary)' }}
           />
           <button
-            onClick={onReset}
+            onClick={(e) => { e.stopPropagation(); onReset(); }}
             style={{ padding: '4px 8px', fontSize: '11px', background: 'var(--card-bg)', border: '1px solid var(--border-light)', borderRadius: '6px', cursor: 'pointer' }}
           >
             Сброс
@@ -275,6 +298,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
       )}
 
+      {/* Управление схемой */}
       <div className="sidebar-section">
         <div className="section-header" onClick={() => setShowManage(!showManage)}>
           <span><i className="fas fa-folder-open"></i> {!collapsed && 'Управление'}</span>
@@ -305,6 +329,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
+      {/* Сетка */}
       <div className="sidebar-section">
         <div className="section-header" onClick={() => setShowGrid(!showGrid)}>
           <span><i className="fas fa-th"></i> {!collapsed && 'Сетка'}</span>
@@ -360,6 +385,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
+      {/* Свойства устройства */}
       {selectedNode && !collapsed && (
         <div className="sidebar-section">
           <div className="section-header" onClick={() => setShowNodeStyle(!showNodeStyle)}>
@@ -431,13 +457,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                   width: '100%',
                 }}
               >
-                Применить ко всем нодам
+                {applyingAll ? '✓ Применено!' : 'Применить ко всем нодам'}
               </button>
             </div>
           )}
         </div>
       )}
 
+      {/* Свойства кабеля */}
       {selectedEdge && !selectedNode && !collapsed && (
         <div className="sidebar-section">
           <div className="section-header" onClick={() => setShowEdgeStyle(!showEdgeStyle)}>
@@ -462,6 +489,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onReset={() => resetEdgeColor('edgeStrokeColor', '#2563eb')}
                 defaultColor="#2563eb"
               />
+
               <label>Метка у источника</label>
               <input
                 type="text"
@@ -483,6 +511,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onChange={(e) => handleEdgeSettingChange('labelText', e.target.value)}
                 placeholder="Автоматически"
               />
+
+              <h4 style={{ fontSize: '12px', margin: '16px 0 8px', color: 'var(--text-secondary)' }}>Основной бейдж</h4>
               <label>Размер шрифта (px)</label>
               <input
                 type="number"
@@ -491,7 +521,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 value={localEdgeSettings.badgeFontSize}
                 onChange={(e) => handleEdgeSettingChange('badgeFontSize', Number(e.target.value))}
               />
-
               <label>Цвет текста / заливки</label>
               <ColorPickerCompact
                 value={localEdgeSettings.badgeTextColor}
@@ -499,23 +528,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onReset={() => resetEdgeColor('badgeTextColor', '#2563eb')}
                 defaultColor="#2563eb"
               />
-
-              <label>Цвет обводки бейджа</label>
-              <ColorPickerCompact
-                value={localEdgeSettings.badgeBorderColor}
-                onChange={(color) => handleEdgeSettingChange('badgeBorderColor', color)}
-                onReset={() => resetEdgeColor('badgeBorderColor', '#2563eb')}
-                defaultColor="#2563eb"
-              />
-
-              <label>Фон маркировок</label>
-              <ColorPickerCompact
-                value={localEdgeSettings.badgeBackgroundColor}
-                onChange={(color) => handleEdgeSettingChange('badgeBackgroundColor', color)}
-                onReset={() => resetEdgeColor('badgeBackgroundColor', '#ffffff')}
-                defaultColor="#ffffff"
-              />
-
               <label>Скругление (px)</label>
               <input
                 type="number"
@@ -524,13 +536,52 @@ const Sidebar: React.FC<SidebarProps> = ({
                 value={localEdgeSettings.badgeBorderRadius}
                 onChange={(e) => handleEdgeSettingChange('badgeBorderRadius', Number(e.target.value))}
               />
+
+              <h4 style={{ fontSize: '12px', margin: '16px 0 8px', color: 'var(--text-secondary)' }}>Маркировки</h4>
+              <label>Размер шрифта (px)</label>
+              <input
+                type="number"
+                min="4"
+                max="20"
+                value={localEdgeSettings.markerFontSize}
+                onChange={(e) => handleEdgeSettingChange('markerFontSize', Number(e.target.value))}
+              />
+              <label>Цвет текста</label>
+              <ColorPickerCompact
+                value={localEdgeSettings.markerTextColor}
+                onChange={(color) => handleEdgeSettingChange('markerTextColor', color)}
+                onReset={() => resetEdgeColor('markerTextColor', '#2563eb')}
+                defaultColor="#2563eb"
+              />
+              <label>Цвет обводки</label>
+              <ColorPickerCompact
+                value={localEdgeSettings.markerBorderColor}
+                onChange={(color) => handleEdgeSettingChange('markerBorderColor', color)}
+                onReset={() => resetEdgeColor('markerBorderColor', '#2563eb')}
+                defaultColor="#2563eb"
+              />
               <label>Толщина обводки (px)</label>
               <input
                 type="number"
                 min="0"
                 max="5"
-                value={localEdgeSettings.badgeBorderWidth}
-                onChange={(e) => handleEdgeSettingChange('badgeBorderWidth', Number(e.target.value))}
+                value={localEdgeSettings.markerBorderWidth}
+                onChange={(e) => handleEdgeSettingChange('markerBorderWidth', Number(e.target.value))}
+              />
+              <label>Скругление (px)</label>
+              <input
+                type="number"
+                min="0"
+                max="30"
+                value={localEdgeSettings.markerBorderRadius}
+                onChange={(e) => handleEdgeSettingChange('markerBorderRadius', Number(e.target.value))}
+              />
+              <label>Фон</label>
+              <ColorPickerCompact
+                value={localEdgeSettings.markerBackgroundColor}
+                onChange={(color) => handleEdgeSettingChange('markerBackgroundColor', color)}
+                onReset={() => resetEdgeColor('markerBackgroundColor', '#ffffff')}
+                defaultColor="#ffffff"
               />
             </div>
           )}
