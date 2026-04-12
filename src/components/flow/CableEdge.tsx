@@ -136,6 +136,7 @@ const CableEdge: FC<any> = ({
 
   return (
     <>
+      {/* @ts-ignore */}
       <BaseEdge
         id={id}
         path={edgePath}
