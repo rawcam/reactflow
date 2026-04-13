@@ -58,6 +58,8 @@ const CableEdge: FC<any> = ({
       ? `${d.cableType} (${d.adapter})`
       : d.cableType || 'Cable';
 
+  const hideMainBadge = d.hideMainBadge ?? false;
+
   // Передаём CSS-переменные в инлайн-стиль – самый высокий приоритет
   const edgeStyle = {
     ...(style as React.CSSProperties),
@@ -145,9 +147,11 @@ const CableEdge: FC<any> = ({
             {targetLabel}
           </div>
         )}
-        <div style={{ ...mainBadgeStyle, left: labelX, top: labelY }} className="nodrag nopan">
-          {displayLabel}
-        </div>
+        {!hideMainBadge && (
+          <div style={{ ...mainBadgeStyle, left: labelX, top: labelY }} className="nodrag nopan">
+            {displayLabel}
+          </div>
+        )}
       </EdgeLabelRenderer>
     </>
   );
