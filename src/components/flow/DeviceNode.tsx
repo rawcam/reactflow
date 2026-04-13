@@ -16,6 +16,7 @@ const DeviceNode = ({ id, data, selected }: any) => {
   const headerFontSize = d.headerFontSize ?? 10;
   const portFontSize = d.portFontSize ?? 6;
   const headerFontWeight = d.headerFontWeight ?? 'normal';
+  const rowHeight = d.rowHeight ?? 22;
 
   const handleLabelSubmit = () => {
     if (editLabel.trim()) d.label = editLabel;
@@ -112,7 +113,7 @@ const DeviceNode = ({ id, data, selected }: any) => {
           const input = d.inputs[rowIndex];
           const output = d.outputs[rowIndex];
           return (
-            <div key={rowIndex} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 22, position: 'relative' }}>
+            <div key={rowIndex} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: rowHeight, position: 'relative' }}>
               <div style={{ flex: 1, textAlign: 'left', position: 'relative' }}>
                 {input && (
                   <>
