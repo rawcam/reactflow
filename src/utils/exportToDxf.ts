@@ -125,8 +125,8 @@ export const exportToDxf = (
       const width = edge.data?.edgeStrokeWidth || 2;
 
       if (points.length >= 2) {
-        // Формируем массив точек в формате [x, y] и инвертируем Y
-        const dxfPoints = points.map(p => [p[0], toDxfY(p[1], maxY)]);
+        // Преобразуем в объекты { x, y } для совместимости с библиотекой
+        const dxfPoints = points.map(p => ({ x: p[0], y: toDxfY(p[1], maxY) }));
         d.drawPolyline(dxfPoints);
       } else {
         console.warn('Пропущено ребро без точек пути:', edge.id);
@@ -150,11 +150,11 @@ export const exportToDxf = (
 
       // Рамка ноды (замкнутая полилиния)
       const pts = [
-        [x, toDxfY(y, maxY)],
-        [x + w, toDxfY(y, maxY)],
-        [x + w, toDxfY(y + h, maxY)],
-        [x, toDxfY(y + h, maxY)],
-        [x, toDxfY(y, maxY)], // замыкаем
+        { x, y: toDxfY(y, maxY) },
+        { x: x + w, y: toDxfY(y, maxY) },
+        { x: x + w, y: toDxfY(y + h, maxY) },
+        { x, y: toDxfY(y + h, maxY) },
+        { x, y: toDxfY(y, maxY) }, // замыкаем
       ];
       d.drawPolyline(pts);
 
