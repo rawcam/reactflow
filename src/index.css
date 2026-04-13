@@ -217,6 +217,8 @@ body {
 
 /* Рёбра */
 .react-flow__edge-path {
+  stroke: #2563eb;
+  stroke-width: 2;
   animation: none !important;
   marker-end: none !important;
   marker-start: none !important;
@@ -229,26 +231,6 @@ body {
 .react-flow__edge marker {
   display: none !important;
 }
-
-/* Классы для управления толщиной линии */
-.edge-width-1 .react-flow__edge-path { stroke-width: 1 !important; }
-.edge-width-2 .react-flow__edge-path { stroke-width: 2 !important; }
-.edge-width-3 .react-flow__edge-path { stroke-width: 3 !important; }
-.edge-width-4 .react-flow__edge-path { stroke-width: 4 !important; }
-.edge-width-5 .react-flow__edge-path { stroke-width: 5 !important; }
-
-/* Классы для управления цветом линии */
-.edge-color-blue .react-flow__edge-path { stroke: #2563eb !important; }
-.edge-color-red .react-flow__edge-path { stroke: #ef4444 !important; }
-.edge-color-green .react-flow__edge-path { stroke: #10b981 !important; }
-.edge-color-yellow .react-flow__edge-path { stroke: #f59e0b !important; }
-.edge-color-purple .react-flow__edge-path { stroke: #8b5cf6 !important; }
-.edge-color-pink .react-flow__edge-path { stroke: #ec4899 !important; }
-.edge-color-cyan .react-flow__edge-path { stroke: #06b6d4 !important; }
-.edge-color-orange .react-flow__edge-path { stroke: #f97316 !important; }
-.edge-color-gray .react-flow__edge-path { stroke: #6b7280 !important; }
-.edge-color-black .react-flow__edge-path { stroke: #000000 !important; }
-.edge-color-white .react-flow__edge-path { stroke: #ffffff !important; }
 
 /* Глобальные стили для хендлов: тонкая полоска 8x1 пикселей */
 .react-flow__handle {
