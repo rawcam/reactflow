@@ -52,18 +52,14 @@ const CableEdge: FC<any> = ({
   const sourceLabel = d.sourceLabelText || d.sourceLabel?.split(':')[1]?.trim() || '';
   const targetLabel = d.targetLabelText || d.targetLabel?.split(':')[1]?.trim() || '';
 
-  const displayLabel = d.labelText?.trim()
-    ? d.labelText
-    : d.adapter
-      ? `${d.cableType} (${d.adapter})`
-      : d.cableType || 'Cable';
+  // ВРЕМЕННО: выводим диагностику в бейдж
+  const displayLabel = `${edgeStrokeColor} ${edgeStrokeWidth}px`;
 
-  // Используем CSS-переменные XY Flow для гарантированного применения стилей
   const edgeStyle = {
+    stroke: selected ? '#ef4444' : edgeStrokeColor,
+    strokeWidth: edgeStrokeWidth,
     ...(style as React.CSSProperties),
-    '--xy-edge-stroke': selected ? '#ef4444' : edgeStrokeColor,
-    '--xy-edge-stroke-width': `${edgeStrokeWidth}px`,
-  } as React.CSSProperties;
+  };
 
   const getPointAtDistanceFromStart = (path: string, distance: number) => {
     const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
