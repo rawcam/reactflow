@@ -448,10 +448,21 @@ const FlowEditor: React.FC = () => {
     setEdges((eds) =>
       eds.map((e) => {
         if (e.id === edgeId) {
-          return {
-            ...e,
-            data: { ...e.data, ...updates },
-          } as Edge<CableEdgeData>;
+          const needsRecreate = 
+            (updates.edgeStrokeColor !== undefined && updates.edgeStrokeColor !== e.data?.edgeStrokeColor) ||
+            (updates.edgeStrokeWidth !== undefined && updates.edgeStrokeWidth !== e.data?.edgeStrokeWidth);
+
+          const updatedData = { ...e.data, ...updates };
+
+          if (needsRecreate) {
+            return {
+              ...e,
+              id: `${e.id.split('--')[0]}--${Date.now()}`,
+              data: updatedData,
+            } as Edge<CableEdgeData>;
+          } else {
+            return { ...e, data: updatedData };
+          }
         }
         return e;
       })
