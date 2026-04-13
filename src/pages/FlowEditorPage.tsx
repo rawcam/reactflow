@@ -15,6 +15,7 @@ import {
   ConnectionLineType,
   useOnSelectionChange,
   reconnectEdge,
+  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import DeviceNode from '../components/flow/DeviceNode';
@@ -102,6 +103,7 @@ const FlowEditor: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { schemas, currentSchemaId, schemaName, setSchemaName, saveCurrentSchema, loadSchema, newSchema, importSchema } = useFlowSchemas();
+  const { updateEdge } = useReactFlow();
 
   useOnSelectionChange({
     onChange: ({ nodes: selectedNodes, edges: selectedEdges }) => {
@@ -219,8 +221,6 @@ const FlowEditor: React.FC = () => {
         targetLabel,
         adapter: compat.adapter,
         badgeFontSize: 6,
-        edgeStrokeWidth: 2,
-        edgeStrokeColor: '#2563eb',
         badgeTextColor: '#2563eb',
         badgeBorderColor: '#2563eb',
         badgeBorderWidth: 1,
@@ -232,6 +232,7 @@ const FlowEditor: React.FC = () => {
         markerBorderWidth: 1,
         markerBorderRadius: 8,
         markerBackgroundColor: '#ffffff',
+        hideMainBadge: false,
       };
 
       const newEdge: Edge<CableEdgeData> = {
@@ -444,30 +445,33 @@ const FlowEditor: React.FC = () => {
     );
   };
 
-  const handleUpdateEdge = (edgeId: string, updates: Partial<CableEdgeData>) => {
+  const handleUpdateEdge = useCallback((edgeId: string, updates: any) => {
+    const styleUpdate: React.CSSProperties = {};
+    if (updates.edgeStrokeColor) {
+      styleUpdate.stroke = updates.edgeStrokeColor;
+    }
+    if (updates.edgeStrokeWidth) {
+      styleUpdate.strokeWidth = updates.edgeStrokeWidth;
+    }
+
+    // Обновляем data отдельно
     setEdges((eds) =>
       eds.map((e) => {
         if (e.id === edgeId) {
-          const needsRecreate = 
-            (updates.edgeStrokeColor !== undefined && updates.edgeStrokeColor !== e.data?.edgeStrokeColor) ||
-            (updates.edgeStrokeWidth !== undefined && updates.edgeStrokeWidth !== e.data?.edgeStrokeWidth);
-
-          const updatedData = { ...e.data, ...updates } as CableEdgeData;
-
-          if (needsRecreate) {
-            return {
-              ...e,
-              id: `${e.id.split('--')[0]}--${Date.now()}`,
-              data: updatedData,
-            } as Edge<CableEdgeData>;
-          } else {
-            return { ...e, data: updatedData } as Edge<CableEdgeData>;
-          }
+          return {
+            ...e,
+            data: { ...e.data, ...updates },
+          };
         }
         return e;
       })
     );
-  };
+
+    // Обновляем стиль через updateEdge
+    if (Object.keys(styleUpdate).length > 0) {
+      updateEdge(edgeId, { style: styleUpdate });
+    }
+  }, [updateEdge, setEdges]);
 
   const handleToggleTheme = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
