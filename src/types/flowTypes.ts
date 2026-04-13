@@ -86,6 +86,7 @@ export interface DeviceNodeData {
   headerFontSize?: number;
   portFontSize?: number;
   headerFontWeight?: 'normal' | 'bold';
+  rowHeight?: number;                     // <-- новое поле
   deviceType?: DeviceType;
   networkSwitchConfig?: NetworkSwitchConfig;
 }
