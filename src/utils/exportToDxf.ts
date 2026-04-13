@@ -2,7 +2,7 @@
 import { Node, Edge } from '@xyflow/react';
 import { DeviceNodeData, CableEdgeData } from '../types/flowTypes';
 import { getSmoothStepPath, Position } from '@xyflow/react';
-import Writer from 'dxf';
+import Drawing from 'dxf-writer'; // <-- Правильный импорт
 
 // Преобразование координат (инверсия Y)
 const toDxfY = (y: number, maxY: number) => maxY - y;
@@ -39,9 +39,9 @@ const mapColorToAci = (hex: string): number => {
   const g = parseInt(hex.slice(3,5), 16);
   const b = parseInt(hex.slice(5,7), 16);
   
-  if (r === 37 && g === 99 && b === 235) return 5;
-  if (r === 239 && g === 68 && b === 68) return 1;
-  if (r === 16 && g === 185 && b === 129) return 3;
+  if (r === 37 && g === 99 && b === 235) return 5; // #2563eb
+  if (r === 239 && g === 68 && b === 68) return 1; // #ef4444
+  if (r === 16 && g === 185 && b === 129) return 3; // #10b981
   if (r === 0 && g === 0 && b === 0) return 7;
   if (r === 255 && g === 255 && b === 255) return 7;
   
@@ -63,14 +63,14 @@ export const exportToDxf = (
     });
     maxY += 100;
 
-    const dxf = new Writer();
+    const d = new Drawing();
     
     // Устанавливаем единицы и кодировку
-    dxf.setUnits('mm');
-    dxf.setVariable('$DWGCODEPAGE', 'ANSI_1251');
-
+    d.setUnits('Millimeters');
+    
     // Добавляем слой по умолчанию
-    dxf.addLayer('0', 7, 'CONTINUOUS');
+    d.addLayer('0', 7, 'CONTINUOUS');
+    d.setActiveLayer('0');
 
     // --- Рёбра ---
     edges.forEach(edge => {
@@ -125,8 +125,9 @@ export const exportToDxf = (
       const width = edge.data?.edgeStrokeWidth || 2;
 
       if (points.length >= 2) {
-        const dxfPoints = points.map(p => ({ x: p[0], y: toDxfY(p[1], maxY) }));
-        dxf.drawPolyline(dxfPoints, { color: colorAci, lineweight: width / 10 });
+        // Рисуем полилинию для рёбер
+        const dxfPoints = points.map(p => [p[0], toDxfY(p[1], maxY)]);
+        d.drawPolyline(dxfPoints);
       } else {
         console.warn('Пропущено ребро без точек пути:', edge.id);
       }
@@ -136,9 +137,7 @@ export const exportToDxf = (
         const midIdx = Math.floor(points.length / 2);
         const [midX, midY] = points[midIdx];
         const text = edge.data?.labelText || edge.data?.cableType || 'Cable';
-        dxf.drawText(midX + 5, toDxfY(midY - 10, maxY), 8, text, {
-          color: mapColorToAci(edge.data?.badgeTextColor || '#2563eb'),
-        });
+        d.drawText(midX + 5, toDxfY(midY - 10, maxY), 8, 0, text);
       }
     });
 
@@ -151,39 +150,30 @@ export const exportToDxf = (
 
       // Рамка ноды
       const pts = [
-        { x, y: toDxfY(y, maxY) },
-        { x: x + w, y: toDxfY(y, maxY) },
-        { x: x + w, y: toDxfY(y + h, maxY) },
-        { x, y: toDxfY(y + h, maxY) },
+        [x, toDxfY(y, maxY)],
+        [x + w, toDxfY(y, maxY)],
+        [x + w, toDxfY(y + h, maxY)],
+        [x, toDxfY(y + h, maxY)],
+        [x, toDxfY(y, maxY)], // Замыкаем контур
       ];
-      dxf.drawPolyline(pts, {
-        color: mapColorToAci(node.data.color || '#2563eb'),
-        lineweight: (node.data.borderWidth || 1) / 10,
-        close: true,
-      });
+      d.drawPolyline(pts);
 
       // Текст метки ноды
-      dxf.drawText(x + 5, toDxfY(y + 15, maxY), 10, node.data.label, {
-        color: 7,
-      });
+      d.drawText(x + 5, toDxfY(y + 15, maxY), 10, 0, node.data.label);
 
       // Хендлы
       const rowHeight = node.data.rowHeight || 22;
       node.data.inputs.forEach((_, idx) => {
         const offsetY = y + 40 + (idx + 0.5) * rowHeight;
-        dxf.drawCircle(x - 8, toDxfY(offsetY, maxY), 3, {
-          color: mapColorToAci(node.data.color || '#2563eb'),
-        });
+        d.drawCircle(x - 8, toDxfY(offsetY, maxY), 3);
       });
       node.data.outputs.forEach((_, idx) => {
         const offsetY = y + 40 + (idx + 0.5) * rowHeight;
-        dxf.drawCircle(x + w + 8, toDxfY(offsetY, maxY), 3, {
-          color: mapColorToAci(node.data.color || '#2563eb'),
-        });
+        d.drawCircle(x + w + 8, toDxfY(offsetY, maxY), 3);
       });
     });
 
-    const dxfString = dxf.toString();
+    const dxfString = d.toDxfString();
     const blob = new Blob([dxfString], { type: 'application/dxf' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
