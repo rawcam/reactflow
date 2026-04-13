@@ -100,6 +100,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     markerBorderWidth: 1,
     markerBorderRadius: 8,
     markerBackgroundColor: '#ffffff',
+    hideMainBadge: false,
   });
 
   const [applyingAll, setApplyingAll] = useState(false);
@@ -143,6 +144,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         markerBorderWidth: (d.markerBorderWidth as number) ?? 1,
         markerBorderRadius: (d.markerBorderRadius as number) ?? 8,
         markerBackgroundColor: (d.markerBackgroundColor as string) ?? '#ffffff',
+        hideMainBadge: (d.hideMainBadge as boolean) ?? false,
       });
     }
   }, [selectedEdge]);
@@ -486,6 +488,14 @@ const Sidebar: React.FC<SidebarProps> = ({
               <div className="compact-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <label style={{ fontSize: 13, color: '#334155' }}>Текст бейджа</label>
                 <input type="text" value={localEdgeSettings.labelText} onChange={(e) => handleEdgeSettingChange('labelText', e.target.value)} placeholder="Авто" style={{ width: 120, padding: '6px 8px', fontSize: 13, border: '1px solid var(--border-light)', borderRadius: 10, background: 'var(--bg-panel)', color: 'var(--text-primary)' }} />
+              </div>
+              <div className="compact-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <label style={{ fontSize: 13, color: '#334155' }}>Скрыть тип кабеля</label>
+                <input
+                  type="checkbox"
+                  checked={localEdgeSettings.hideMainBadge}
+                  onChange={(e) => handleEdgeSettingChange('hideMainBadge', e.target.checked)}
+                />
               </div>
               <h4 style={{ fontSize: '13px', margin: '16px 0 8px', color: 'var(--text-secondary)', fontWeight: 500 }}>Основной бейдж</h4>
               <div className="compact-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
