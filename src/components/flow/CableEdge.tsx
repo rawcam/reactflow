@@ -2,7 +2,6 @@
 import { FC } from 'react';
 import {
   getSmoothStepPath,
-  BaseEdge,
   EdgeLabelRenderer,
 } from '@xyflow/react';
 import { CableEdgeData } from '../../types/flowTypes';
@@ -18,8 +17,6 @@ const CableEdge: FC<any> = ({
   data,
   selected,
   style = {},
-  markerEnd,
-  markerStart,
 }) => {
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -52,14 +49,14 @@ const CableEdge: FC<any> = ({
   const sourceLabel = d.sourceLabelText || d.sourceLabel?.split(':')[1]?.trim() || '';
   const targetLabel = d.targetLabelText || d.targetLabel?.split(':')[1]?.trim() || '';
 
-  // ВРЕМЕННО: выводим диагностику в бейдж
-  const displayLabel = `${edgeStrokeColor} ${edgeStrokeWidth}px`;
+  const displayLabel = d.labelText?.trim()
+    ? d.labelText
+    : d.adapter
+      ? `${d.cableType} (${d.adapter})`
+      : d.cableType || 'Cable';
 
-  const edgeStyle = {
-    stroke: selected ? '#ef4444' : edgeStrokeColor,
-    strokeWidth: edgeStrokeWidth,
-    ...(style as React.CSSProperties),
-  };
+  // Цвет линии: красный при выделении, иначе из настроек
+  const lineColor = selected ? '#ef4444' : edgeStrokeColor;
 
   const getPointAtDistanceFromStart = (path: string, distance: number) => {
     const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -122,30 +119,44 @@ const CableEdge: FC<any> = ({
   };
 
   return (
-    <>
-      <BaseEdge
-        id={id}
-        path={edgePath}
-        style={edgeStyle}
-        markerEnd={markerEnd}
-        markerStart={markerStart}
-      />
-      <EdgeLabelRenderer>
-        {sourceLabel && (
-          <div style={{ ...markerStyle, left: sourcePos.x, top: sourcePos.y }} className="nodrag nopan">
-            {sourceLabel}
-          </div>
-        )}
-        {targetLabel && (
-          <div style={{ ...markerStyle, left: targetPos.x, top: targetPos.y }} className="nodrag nopan">
-            {targetLabel}
-          </div>
-        )}
-        <div style={{ ...mainBadgeStyle, left: labelX, top: labelY }} className="nodrag nopan">
-          {displayLabel}
+    <EdgeLabelRenderer>
+      {/* Линия */}
+      <svg
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      >
+        <path
+          id={id}
+          d={edgePath}
+          fill="none"
+          stroke={lineColor}
+          strokeWidth={edgeStrokeWidth}
+          style={style as React.CSSProperties}
+        />
+      </svg>
+
+      {/* Метки и бейджи */}
+      {sourceLabel && (
+        <div style={{ ...markerStyle, left: sourcePos.x, top: sourcePos.y }} className="nodrag nopan">
+          {sourceLabel}
         </div>
-      </EdgeLabelRenderer>
-    </>
+      )}
+      {targetLabel && (
+        <div style={{ ...markerStyle, left: targetPos.x, top: targetPos.y }} className="nodrag nopan">
+          {targetLabel}
+        </div>
+      )}
+      <div style={{ ...mainBadgeStyle, left: labelX, top: labelY }} className="nodrag nopan">
+        {displayLabel}
+      </div>
+    </EdgeLabelRenderer>
   );
 };
 
