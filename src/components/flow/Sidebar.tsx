@@ -16,7 +16,7 @@ interface SidebarProps {
   onUpdateNode: (nodeId: string, updates: Partial<DeviceNodeData>) => void;
   onUpdateEdge: (edgeId: string, updates: Partial<CableEdgeData>) => void;
   onApplyNodeStyleToAll: (styles: Partial<DeviceNodeData>) => void;
-  onApplyEdgeStyleToDevice: (edgeId: string) => void; // <-- новый колбэк
+  onApplyEdgeStyleToDevice: (edgeId: string) => void;
   schemas: any[];
   currentSchemaId: string | null;
   schemaName: string;
@@ -384,9 +384,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div className="section-content">
               <div className="row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <label style={{ fontSize: 12 }}>Цвет</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <ColorPickerCompact value={localNodeColor} onChange={handleNodeColorChange} onReset={resetNodeColor} defaultColor="#2563eb" />
-                </div>
+                <ColorPickerCompact value={localNodeColor} onChange={handleNodeColorChange} onReset={resetNodeColor} defaultColor="#2563eb" />
               </div>
               <div className="row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <label style={{ fontSize: 12 }}>Обводка (px)</label>
@@ -434,7 +432,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <div className="subsection-title" style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Линия</div>
               <div className="row">
                 <label>Толщина (px)</label>
-                <div className="field-group" style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8 }}>
                   <input type="number" min="1" max="5" step="0.5" value={localEdgeSettings.edgeStrokeWidth} onChange={(e) => handleEdgeSettingChange('edgeStrokeWidth', Number(e.target.value))} style={{ width: 40, padding: '4px 6px', fontSize: 12 }} />
                   <label>Скругление</label>
                   <input type="number" min="0" max="20" value={localEdgeSettings.edgeBorderRadius} onChange={(e) => handleEdgeSettingChange('edgeBorderRadius', Number(e.target.value))} style={{ width: 40, padding: '4px 6px', fontSize: 12 }} />
@@ -457,7 +455,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <input type="text" value={localEdgeSettings.labelText} onChange={(e) => handleEdgeSettingChange('labelText', e.target.value)} placeholder="Авто" style={{ width: 130, padding: '4px 8px', fontSize: 12, border: '1px solid var(--border-light)', borderRadius: 6 }} />
               </div>
               <div className="row">
-                <div className="checkbox-group" style={{ display: 'flex', gap: 16 }}>
+                <div style={{ display: 'flex', gap: 16 }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
                     <input type="checkbox" checked={localEdgeSettings.hideMainBadge} onChange={(e) => handleEdgeSettingChange('hideMainBadge', e.target.checked)} />
                     Скрыть тип кабеля
@@ -469,12 +467,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               </div>
 
-              <div className="divider" style={{ borderTop: '1px solid var(--border-light)', margin: '8px 0' }} />
+              <div style={{ borderTop: '1px solid var(--border-light)', margin: '8px 0' }} />
 
               <div className="subsection-title" style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Основной бейдж</div>
               <div className="row">
                 <label>Размер (px)</label>
-                <div className="field-group" style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8 }}>
                   <input type="number" min="4" max="20" value={localEdgeSettings.badgeFontSize} onChange={(e) => handleEdgeSettingChange('badgeFontSize', Number(e.target.value))} style={{ width: 40, padding: '4px 6px', fontSize: 12 }} />
                   <label>Скругление</label>
                   <input type="number" min="0" max="30" value={localEdgeSettings.badgeBorderRadius} onChange={(e) => handleEdgeSettingChange('badgeBorderRadius', Number(e.target.value))} style={{ width: 40, padding: '4px 6px', fontSize: 12 }} />
@@ -485,19 +483,19 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <ColorPickerCompact value={localEdgeSettings.badgeTextColor} onChange={(c) => handleEdgeSettingChange('badgeTextColor', c)} onReset={() => resetEdgeColor('badgeTextColor', '#2563eb')} defaultColor="#2563eb" />
               </div>
 
-              <div className="divider" style={{ borderTop: '1px solid var(--border-light)', margin: '8px 0' }} />
+              <div style={{ borderTop: '1px solid var(--border-light)', margin: '8px 0' }} />
 
               <div className="subsection-title" style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Маркировки</div>
-              <div className="three-cols" style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
-                <div className="field" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <label>Размер</label>
                   <input type="number" min="4" max="20" value={localEdgeSettings.markerFontSize} onChange={(e) => handleEdgeSettingChange('markerFontSize', Number(e.target.value))} style={{ width: 40, padding: '4px 6px', fontSize: 12 }} />
                 </div>
-                <div className="field" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <label>Скругление</label>
                   <input type="number" min="0" max="30" value={localEdgeSettings.markerBorderRadius} onChange={(e) => handleEdgeSettingChange('markerBorderRadius', Number(e.target.value))} style={{ width: 40, padding: '4px 6px', fontSize: 12 }} />
                 </div>
-                <div className="field" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <label>Толщина</label>
                   <input type="number" min="0" max="5" value={localEdgeSettings.markerBorderWidth} onChange={(e) => handleEdgeSettingChange('markerBorderWidth', Number(e.target.value))} style={{ width: 40, padding: '4px 6px', fontSize: 12 }} />
                 </div>
