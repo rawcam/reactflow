@@ -73,6 +73,21 @@ const checkCompatibility = (
   return { compatible: false };
 };
 
+// 🎨 Цвета кабелей по типам (задел на будущее)
+const CABLE_TYPE_COLORS: Record<string, string> = {
+  'HDMI Cable': '#3b82f6',
+  'DisplayPort Cable': '#8b5cf6',
+  'DVI Cable': '#f59e0b',
+  'VGA Cable': '#94a3b8',
+  'Cat5e': '#10b981',
+  'Cat6': '#059669',
+  'Cat6 SFTP': '#ef4444',
+  'AES67': '#06b6d4',
+  'Dante': '#d946ef',
+  'Custom Cable': '#6b7280',
+};
+const DEFAULT_CABLE_COLOR = '#2563eb';
+
 const FlowEditor: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<DeviceNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge<CableEdgeData>>([]);
@@ -101,7 +116,8 @@ const FlowEditor: React.FC = () => {
     visible: false, x: 0, y: 0, edgeId: null,
   });
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // ✅ Сайдбар свёрнут по умолчанию
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { schemas, currentSchemaId, schemaName, setSchemaName, saveCurrentSchema, loadSchema, newSchema, importSchema } = useFlowSchemas();
@@ -128,57 +144,9 @@ const FlowEditor: React.FC = () => {
   const updateGridOpacity = (opacity: number) => saveGridSettings({ ...gridSettings, opacity });
   const updateGridVisible = (visible: boolean) => saveGridSettings({ ...gridSettings, visible });
 
+  // ✅ Убираем демо-устройства – оставляем useEffect пустым
   useEffect(() => {
-    if (schemas.length === 0 && nodes.length === 0) {
-      const demoNodes: Node<DeviceNodeData>[] = [
-        {
-          id: '1',
-          type: 'deviceNode',
-          position: { x: 100, y: 100 },
-          data: {
-            label: 'Источник сигнала',
-            icon: 'fas fa-camera',
-            ...createDemoInterfaces(),
-            color: '#2563eb',
-            powerSupply: { voltage: 'AC', power: 50, connector: 'IEC' },
-          },
-        },
-        {
-          id: '2',
-          type: 'deviceNode',
-          position: { x: 400, y: 100 },
-          data: {
-            label: 'Коммутатор PoE',
-            icon: 'fas fa-network-wired',
-            inputs: [
-              { id: 'sw-in-1', name: 'Uplink', direction: 'input', connector: 'RJ45', protocol: 'Ethernet' },
-            ],
-            outputs: [
-              { id: 'sw-out-1', name: 'Port 1 PoE', direction: 'output', connector: 'RJ45', protocol: 'Ethernet', poe: true, poePower: 30 },
-              { id: 'sw-out-2', name: 'Port 2 PoE', direction: 'output', connector: 'RJ45', protocol: 'Ethernet', poe: true, poePower: 30 },
-            ],
-            color: '#10b981',
-            powerSupply: { voltage: 'AC', power: 150, connector: 'IEC' },
-          },
-        },
-        {
-          id: '3',
-          type: 'deviceNode',
-          position: { x: 700, y: 100 },
-          data: {
-            label: 'IP-камера',
-            icon: 'fas fa-video',
-            inputs: [
-              { id: 'cam-in-1', name: 'PoE IN', direction: 'input', connector: 'RJ45', protocol: 'Ethernet', poe: true, poePower: 15 },
-            ],
-            outputs: [],
-            color: '#ef4444',
-            totalPoEConsumption: 15,
-          },
-        },
-      ];
-      setNodes(demoNodes);
-    }
+    // Пустой холст при запуске
   }, [schemas]);
 
   const onConnect = useCallback(
@@ -215,24 +183,32 @@ const FlowEditor: React.FC = () => {
         }
       }
 
+      const cableType = compat.cableType || 'Custom Cable';
+      const edgeColor = CABLE_TYPE_COLORS[cableType] || DEFAULT_CABLE_COLOR;
+
       const sourceLabel = `${sourceNode.data.label}: ${sourceInterface.name}`;
       const targetLabel = `${targetNode.data.label}: ${targetInterface.name}`;
+      
+      // ✅ Дефолтные значения стилей
       const cableData: CableEdgeData = {
-        cableType: compat.cableType || 'Custom Cable',
+        cableType,
         sourceLabel,
         targetLabel,
         adapter: compat.adapter,
+        edgeStrokeColor: edgeColor,
+        edgeStrokeWidth: 1,                // толщина 1px
+        edgeBorderRadius: 2,               // скругление 2px
         badgeFontSize: 6,
         badgeTextColor: '#2563eb',
         badgeBorderColor: '#2563eb',
         badgeBorderWidth: 1,
         badgeBorderRadius: 12,
-        badgeBackgroundColor: 'var(--bg-panel)',
+        badgeBackgroundColor: '#ffffff',
         markerFontSize: 5,
-        markerTextColor: '#2563eb',
+        markerTextColor: '#000000',        // чёрный текст маркировок
         markerBorderColor: '#2563eb',
         markerBorderWidth: 1,
-        markerBorderRadius: 8,
+        markerBorderRadius: 2,             // скругление 2px
         markerBackgroundColor: '#ffffff',
         hideMainBadge: false,
         hideMarkers: false,
@@ -246,7 +222,7 @@ const FlowEditor: React.FC = () => {
         targetHandle: params.targetHandle,
         type: 'cableEdge',
         animated: false,
-        style: { stroke: '#2563eb', strokeWidth: 2 },
+        style: { stroke: edgeColor, strokeWidth: 1 },
         data: cableData,
       };
 
@@ -312,6 +288,7 @@ const FlowEditor: React.FC = () => {
     setNodes(nds => [...nds, newNode]);
   };
 
+  // ✅ Создание ноды с чёрной обводкой и скруглением 2px
   const addNewNode = () => {
     const newId = Date.now().toString();
     const newNode: Node<DeviceNodeData> = {
@@ -323,7 +300,9 @@ const FlowEditor: React.FC = () => {
         icon: 'fas fa-microchip',
         inputs: [{ id: `in-${newId}-1`, name: 'Вход 1', direction: 'input', connector: 'HDMI', protocol: 'HDMI' }],
         outputs: [{ id: `out-${newId}-1`, name: 'Выход 1', direction: 'output', connector: 'HDMI', protocol: 'HDMI' }],
-        color: '#2563eb',
+        color: '#000000',           // чёрная обводка
+        borderRadius: 2,            // скругление 2px
+        borderWidth: 1,
       },
     };
     setNodes(nds => [...nds, newNode]);
@@ -570,19 +549,36 @@ const FlowEditor: React.FC = () => {
     event.target.value = '';
   };
 
+  // ✅ Улучшенная функция экспорта SVG с логированием
   const exportSVG = async () => {
     const element = document.querySelector('.react-flow');
-    if (element) {
+    if (!element) {
+      console.error('❌ Элемент .react-flow не найден');
+      alert('Не удалось найти область схемы для экспорта');
+      return;
+    }
+
+    try {
       const htmlToImage = (await import('html-to-image')).default;
-      try {
-        const dataUrl = await htmlToImage.toSvg(element as HTMLElement, { backgroundColor: theme === 'light' ? '#f9fafb' : '#0f172a' });
-        const link = document.createElement('a');
-        link.download = `flow-${schemaName}.svg`;
-        link.href = dataUrl;
-        link.click();
-      } catch (err) {
-        alert('Ошибка экспорта: ' + (err as Error).message);
-      }
+      console.log('🎨 Начинаем экспорт SVG...');
+      
+      const dataUrl = await htmlToImage.toSvg(element as HTMLElement, {
+        backgroundColor: theme === 'light' ? '#f9fafb' : '#0f172a',
+        fetchRequestInit: {
+          mode: 'cors',
+          credentials: 'omit',
+        },
+      });
+
+      console.log('✅ SVG сгенерирован, размер:', dataUrl.length);
+      
+      const link = document.createElement('a');
+      link.download = `flow-${schemaName || 'scheme'}.svg`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('❌ Ошибка экспорта SVG:', err);
+      alert('Ошибка экспорта SVG: ' + (err as Error).message);
     }
   };
 
