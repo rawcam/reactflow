@@ -358,23 +358,279 @@ const FlowEditor: React.FC = () => {
     }));
   }, [edges, updateEdge, setEdges]);
 
-  // ... (все остальные функции: handleKeyDown, applyNodeStyleToAll, saveSchemaToFile, loadSchemaFromFile, exportSVG, exportDXF, handleLoadSchema, handleNewSchema, handleSaveSchema, handleUpdateNode, handleUpdateEdge, handleToggleTheme, handleToggleSidebar)
-  // Они остаются точно такими же, как в последней рабочей версии.
-  // Для краткости я не дублирую их здесь, но в реальном файле они должны быть.
+  const applyStyleToNodeEdges = (edgeId: string, nodeSide: 'source' | 'target') => {
+    const edge = edges.find(e => e.id === edgeId);
+    if (!edge) return;
+    const nodeId = nodeSide === 'source' ? edge.source : edge.target;
+    const styleToApply = edge.style;
+    const hideMainBadge = edge.data?.hideMainBadge;
+    const hideMarkers = edge.data?.hideMarkers;
+    const markerFontSize = edge.data?.markerFontSize;
+    const markerTextColor = edge.data?.markerTextColor;
+    const markerBorderColor = edge.data?.markerBorderColor;
+    const markerBorderWidth = edge.data?.markerBorderWidth;
+    const markerBorderRadius = edge.data?.markerBorderRadius;
+    const markerBackgroundColor = edge.data?.markerBackgroundColor;
 
-  // ВАЖНО: полный файл содержит все эти функции, которые уже были отлажены ранее.
-  // Я приведу только сигнатуры, чтобы показать, что они есть.
+    setEdges(eds => eds.map(e => {
+      if (e.source === nodeId || e.target === nodeId) {
+        const updatedData = {
+          ...e.data,
+          hideMainBadge,
+          hideMarkers,
+          markerFontSize,
+          markerTextColor,
+          markerBorderColor,
+          markerBorderWidth,
+          markerBorderRadius,
+          markerBackgroundColor,
+        };
+        updateEdge(e.id, { style: styleToApply });
+        return { ...e, style: styleToApply, data: updatedData } as Edge<CableEdgeData>;
+      }
+      return e;
+    }));
+  };
 
-  const applyNodeStyleToAll = (styles: Partial<DeviceNodeData>) => { /* ... */ };
-  const saveSchemaToFile = () => { /* ... */ };
-  const loadSchemaFromFile = (event: React.ChangeEvent<HTMLInputElement>) => { /* ... */ };
-  const exportSVG = async () => { /* ... */ };
-  const exportDXF = () => { exportToDxf(nodes, edges, schemaName || 'scheme'); };
-  const handleLoadSchema = (id: string) => { /* ... */ };
-  const handleNewSchema = () => { /* ... */ };
+  const applyStyleToEdgesOfSameType = (edgeId: string) => {
+    const edge = edges.find(e => e.id === edgeId);
+    if (!edge || !edge.data) return;
+    const cableType = edge.data.cableType;
+    if (!cableType) return;
+    const styleToApply = edge.style;
+    const hideMainBadge = edge.data.hideMainBadge;
+    const hideMarkers = edge.data.hideMarkers;
+    const markerFontSize = edge.data.markerFontSize;
+    const markerTextColor = edge.data.markerTextColor;
+    const markerBorderColor = edge.data.markerBorderColor;
+    const markerBorderWidth = edge.data.markerBorderWidth;
+    const markerBorderRadius = edge.data.markerBorderRadius;
+    const markerBackgroundColor = edge.data.markerBackgroundColor;
+
+    setEdges(eds => eds.map(e => {
+      if (e.data?.cableType === cableType) {
+        const updatedData = {
+          ...e.data,
+          hideMainBadge,
+          hideMarkers,
+          markerFontSize,
+          markerTextColor,
+          markerBorderColor,
+          markerBorderWidth,
+          markerBorderRadius,
+          markerBackgroundColor,
+        };
+        updateEdge(e.id, { style: styleToApply });
+        return { ...e, style: styleToApply, data: updatedData } as Edge<CableEdgeData>;
+      }
+      return e;
+    }));
+  };
+
+  const toggleHideMainBadge = (edgeId: string) => {
+    setEdges(eds => eds.map(e => {
+      if (e.id === edgeId && e.data) {
+        const newHide = !e.data.hideMainBadge;
+        return { ...e, data: { ...e.data, hideMainBadge: newHide } } as Edge<CableEdgeData>;
+      }
+      return e;
+    }));
+  };
+
+  const toggleMarkers = (edgeId: string) => {
+    setEdges(eds => eds.map(e => {
+      if (e.id === edgeId && e.data) {
+        const newHide = !e.data.hideMarkers;
+        return { ...e, data: { ...e.data, hideMarkers: newHide } } as Edge<CableEdgeData>;
+      }
+      return e;
+    }));
+  };
+
+  const handleEdgeContextMenuAction = (action: string) => {
+    if (!edgeContextMenu.edgeId) return;
+    const edge = edges.find(e => e.id === edgeContextMenu.edgeId);
+    if (!edge) return;
+
+    if (action === 'toggleMainBadge') {
+      toggleHideMainBadge(edge.id);
+    } else if (action === 'toggleMarkers') {
+      toggleMarkers(edge.id);
+    } else if (action === 'applyToNodeSource') {
+      applyStyleToNodeEdges(edge.id, 'source');
+    } else if (action === 'applyToNodeTarget') {
+      applyStyleToNodeEdges(edge.id, 'target');
+    } else if (action === 'applyToSameType') {
+      applyStyleToEdgesOfSameType(edge.id);
+    } else if (action === 'openSidebar') {
+      setSelectedEdge(edge);
+    }
+    closeContextMenu();
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement;
+      const isInput = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.getAttribute('contenteditable') === 'true');
+      if (isInput) return;
+
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        if (selectedNode) {
+          setCopiedNode(selectedNode);
+          e.preventDefault();
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        if (copiedNode) {
+          duplicateNode(copiedNode);
+          e.preventDefault();
+        }
+      }
+      if (e.key === 'Delete') {
+        setNodes(nds => nds.filter(n => !n.selected));
+        setEdges(eds => eds.filter(e => !e.selected));
+        e.preventDefault();
+      }
+
+      if (selectedEdge && e.shiftKey) {
+        const edge = selectedEdge;
+        if (e.key === 'H') {
+          e.preventDefault();
+          toggleHideMainBadge(edge.id);
+        } else if (e.key === 'M') {
+          e.preventDefault();
+          toggleMarkers(edge.id);
+        } else if (e.key === 'N') {
+          e.preventDefault();
+          applyStyleToNodeEdges(edge.id, 'source');
+        } else if (e.key === 'T') {
+          e.preventDefault();
+          applyStyleToEdgesOfSameType(edge.id);
+        } else if (e.key === 'E') {
+          e.preventDefault();
+          setSelectedEdge(edge);
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selectedNode, copiedNode, setNodes, setEdges, selectedEdge]);
+
+  useEffect(() => {
+    document.addEventListener('click', closeContextMenu);
+    return () => document.removeEventListener('click', closeContextMenu);
+  }, []);
+
+  const applyNodeStyleToAll = (styles: Partial<DeviceNodeData>) => {
+    setNodes((nds) =>
+      nds.map((n) => ({
+        ...n,
+        data: { ...n.data, ...styles },
+      }))
+    );
+  };
+
+  const saveSchemaToFile = () => {
+    const schema: SavedSchema = {
+      id: currentSchemaId || Date.now().toString(),
+      name: schemaName || 'schema',
+      nodes,
+      edges,
+    };
+    const json = JSON.stringify(schema, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${schema.name}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const loadSchemaFromFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const schema = JSON.parse(content) as SavedSchema;
+        if (schema.nodes && schema.edges) {
+          importSchema(schema);
+          setNodes(schema.nodes);
+          setEdges(schema.edges);
+        } else {
+          alert('Неверный формат файла схемы');
+        }
+      } catch (err) {
+        alert('Ошибка чтения файла: ' + (err as Error).message);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  };
+
+  const exportSVG = async () => {
+    const element = document.querySelector('.react-flow');
+    if (element) {
+      const htmlToImage = (await import('html-to-image')).default;
+      try {
+        const dataUrl = await htmlToImage.toSvg(element as HTMLElement, { backgroundColor: theme === 'light' ? '#f9fafb' : '#0f172a' });
+        const link = document.createElement('a');
+        link.download = `flow-${schemaName}.svg`;
+        link.href = dataUrl;
+        link.click();
+      } catch (err) {
+        alert('Ошибка экспорта: ' + (err as Error).message);
+      }
+    }
+  };
+
+  const exportDXF = () => {
+    exportToDxf(nodes, edges, schemaName || 'scheme');
+  };
+
+  const handleLoadSchema = (id: string) => {
+    const schema = loadSchema(id);
+    if (schema) {
+      setNodes(schema.nodes);
+      setEdges(schema.edges);
+    }
+  };
+
+  const handleNewSchema = () => {
+    const { nodes: emptyNodes, edges: emptyEdges } = newSchema();
+    setNodes(emptyNodes);
+    setEdges(emptyEdges);
+  };
+
   const handleSaveSchema = () => saveCurrentSchema(nodes, edges);
-  const handleUpdateNode = (nodeId: string, updates: Partial<DeviceNodeData>) => { /* ... */ };
-  const handleUpdateEdge = useCallback((edgeId: string, updates: any) => { /* ... */ }, [updateEdge, setEdges]);
+
+  const handleUpdateNode = (nodeId: string, updates: Partial<DeviceNodeData>) => {
+    setNodes((nds) =>
+      nds.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, ...updates } } : n))
+    );
+  };
+
+  const handleUpdateEdge = useCallback((edgeId: string, updates: any) => {
+    const styleUpdate: React.CSSProperties = {};
+    if (updates.edgeStrokeColor) styleUpdate.stroke = updates.edgeStrokeColor;
+    if (updates.edgeStrokeWidth) styleUpdate.strokeWidth = updates.edgeStrokeWidth;
+
+    setEdges((eds) =>
+      eds.map((e) => {
+        if (e.id === edgeId) {
+          return { ...e, data: { ...e.data, ...updates } } as Edge<CableEdgeData>;
+        }
+        return e;
+      })
+    );
+
+    if (Object.keys(styleUpdate).length > 0) {
+      updateEdge(edgeId, { style: styleUpdate });
+    }
+  }, [updateEdge, setEdges]);
+
   const handleToggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
   const handleToggleSidebar = () => setSidebarCollapsed(prev => !prev);
 
