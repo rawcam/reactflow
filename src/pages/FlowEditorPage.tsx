@@ -337,20 +337,17 @@ const FlowEditor: React.FC = () => {
     const hideMainBadge = edge.data?.hideMainBadge;
     const sourceLabelText = edge.data?.sourceLabelText;
     const targetLabelText = edge.data?.targetLabelText;
-    
+
     setEdges(eds => eds.map(e => {
       if (e.source === nodeId || e.target === nodeId) {
-        updateEdge(e.id, { style: styleToApply });
-        return {
-          ...e,
-          style: styleToApply,
-          data: {
-            ...e.data,
-            hideMainBadge,
-            sourceLabelText: e.source === nodeId ? sourceLabelText : e.data?.sourceLabelText,
-            targetLabelText: e.target === nodeId ? targetLabelText : e.data?.targetLabelText,
-          }
+        const updatedData = {
+          ...e.data,
+          hideMainBadge,
+          sourceLabelText: e.source === nodeId ? sourceLabelText : e.data?.sourceLabelText,
+          targetLabelText: e.target === nodeId ? targetLabelText : e.data?.targetLabelText,
         };
+        updateEdge(e.id, { style: styleToApply });
+        return { ...e, style: styleToApply, data: updatedData } as Edge<CableEdgeData>;
       }
       return e;
     }));
@@ -359,48 +356,56 @@ const FlowEditor: React.FC = () => {
   // Применение стиля к рёбрам того же типа
   const applyStyleToEdgesOfSameType = (edgeId: string) => {
     const edge = edges.find(e => e.id === edgeId);
-    if (!edge) return;
-    const cableType = edge.data?.cableType;
+    if (!edge || !edge.data) return;
+    const cableType = edge.data.cableType;
     if (!cableType) return;
     const styleToApply = edge.style;
-    const hideMainBadge = edge.data?.hideMainBadge;
-    const markerFontSize = edge.data?.markerFontSize;
-    const markerTextColor = edge.data?.markerTextColor;
-    // ... другие настройки маркировок
-    
+    const hideMainBadge = edge.data.hideMainBadge;
+    const markerFontSize = edge.data.markerFontSize;
+    const markerTextColor = edge.data.markerTextColor;
+    const markerBorderColor = edge.data.markerBorderColor;
+    const markerBorderWidth = edge.data.markerBorderWidth;
+    const markerBorderRadius = edge.data.markerBorderRadius;
+    const markerBackgroundColor = edge.data.markerBackgroundColor;
+
     setEdges(eds => eds.map(e => {
       if (e.data?.cableType === cableType) {
-        updateEdge(e.id, { style: styleToApply });
-        return {
-          ...e,
-          style: styleToApply,
-          data: { ...e.data, hideMainBadge, markerFontSize, markerTextColor }
+        const updatedData = {
+          ...e.data,
+          hideMainBadge,
+          markerFontSize,
+          markerTextColor,
+          markerBorderColor,
+          markerBorderWidth,
+          markerBorderRadius,
+          markerBackgroundColor,
         };
+        updateEdge(e.id, { style: styleToApply });
+        return { ...e, style: styleToApply, data: updatedData } as Edge<CableEdgeData>;
       }
       return e;
     }));
   };
 
-  // Переключение hideMainBadge для текущего ребра
+  // Переключение hideMainBadge
   const toggleHideMainBadge = (edgeId: string) => {
     setEdges(eds => eds.map(e => {
-      if (e.id === edgeId) {
-        const newHide = !e.data?.hideMainBadge;
-        return { ...e, data: { ...e.data, hideMainBadge: newHide } };
+      if (e.id === edgeId && e.data) {
+        const newHide = !e.data.hideMainBadge;
+        return { ...e, data: { ...e.data, hideMainBadge: newHide } } as Edge<CableEdgeData>;
       }
       return e;
     }));
   };
 
-  // Переключение видимости маркировок (скрываем, если обе пусты; показываем, если были скрыты)
+  // Переключение маркировок
   const toggleMarkers = (edgeId: string) => {
     const edge = edges.find(e => e.id === edgeId);
-    if (!edge) return;
-    const hasMarkers = !!(edge.data?.sourceLabelText || edge.data?.targetLabelText);
-    // Если маркеры есть, скрываем их (сохраняем в скрытые поля)
+    if (!edge || !edge.data) return;
+    const hasMarkers = !!(edge.data.sourceLabelText || edge.data.targetLabelText);
     if (hasMarkers) {
       setEdges(eds => eds.map(e => {
-        if (e.id === edgeId) {
+        if (e.id === edgeId && e.data) {
           return {
             ...e,
             data: {
@@ -409,23 +414,22 @@ const FlowEditor: React.FC = () => {
               _hiddenTargetLabel: e.data.targetLabelText,
               sourceLabelText: '',
               targetLabelText: '',
-            }
-          };
+            },
+          } as Edge<CableEdgeData>;
         }
         return e;
       }));
     } else {
-      // Восстанавливаем из скрытых
       setEdges(eds => eds.map(e => {
-        if (e.id === edgeId) {
+        if (e.id === edgeId && e.data) {
           return {
             ...e,
             data: {
               ...e.data,
-              sourceLabelText: e.data._hiddenSourceLabel || '',
-              targetLabelText: e.data._hiddenTargetLabel || '',
-            }
-          };
+              sourceLabelText: (e.data as any)._hiddenSourceLabel || '',
+              targetLabelText: (e.data as any)._hiddenTargetLabel || '',
+            },
+          } as Edge<CableEdgeData>;
         }
         return e;
       }));
@@ -448,10 +452,7 @@ const FlowEditor: React.FC = () => {
     } else if (action === 'applyToSameType') {
       applyStyleToEdgesOfSameType(edge.id);
     } else if (action === 'openSidebar') {
-      // Выделяем ребро (уже выделено) и раскрываем секцию свойств кабеля
-      // Это делается через сайдбар, можно просто установить selectedEdge
       setSelectedEdge(edge);
-      // TODO: вызвать раскрытие секции в Sidebar (пропс onToggleSection)
     }
     closeContextMenu();
   };
@@ -463,7 +464,6 @@ const FlowEditor: React.FC = () => {
       const isInput = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.getAttribute('contenteditable') === 'true');
       if (isInput) return;
 
-      // Существующие хоткеи
       if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
         if (selectedNode) {
           setCopiedNode(selectedNode);
@@ -482,7 +482,6 @@ const FlowEditor: React.FC = () => {
         e.preventDefault();
       }
 
-      // Новые хоткеи для рёбер (только если выделено ребро и не в поле ввода)
       if (selectedEdge && e.shiftKey) {
         const edge = selectedEdge;
         if (e.key === 'H') {
@@ -493,14 +492,13 @@ const FlowEditor: React.FC = () => {
           toggleMarkers(edge.id);
         } else if (e.key === 'N') {
           e.preventDefault();
-          applyStyleToNodeEdges(edge.id, 'source'); // или 'target' – можно уточнить
+          applyStyleToNodeEdges(edge.id, 'source');
         } else if (e.key === 'T') {
           e.preventDefault();
           applyStyleToEdgesOfSameType(edge.id);
         } else if (e.key === 'E') {
           e.preventDefault();
-          setSelectedEdge(edge); // выделение
-          // TODO: раскрыть секцию в сайдбаре
+          setSelectedEdge(edge);
         }
       }
     };
@@ -522,13 +520,80 @@ const FlowEditor: React.FC = () => {
     );
   };
 
-  const saveSchemaToFile = () => { /* ... */ };
-  const loadSchemaFromFile = (event: React.ChangeEvent<HTMLInputElement>) => { /* ... */ };
-  const exportSVG = async () => { /* ... */ };
-  const exportDXF = () => { exportToDxf(nodes, edges, schemaName || 'scheme'); };
+  const saveSchemaToFile = () => {
+    const schema: SavedSchema = {
+      id: currentSchemaId || Date.now().toString(),
+      name: schemaName || 'schema',
+      nodes,
+      edges,
+    };
+    const json = JSON.stringify(schema, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${schema.name}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
-  const handleLoadSchema = (id: string) => { /* ... */ };
-  const handleNewSchema = () => { /* ... */ };
+  const loadSchemaFromFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const schema = JSON.parse(content) as SavedSchema;
+        if (schema.nodes && schema.edges) {
+          importSchema(schema);
+          setNodes(schema.nodes);
+          setEdges(schema.edges);
+        } else {
+          alert('Неверный формат файла схемы');
+        }
+      } catch (err) {
+        alert('Ошибка чтения файла: ' + (err as Error).message);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  };
+
+  const exportSVG = async () => {
+    const element = document.querySelector('.react-flow');
+    if (element) {
+      const htmlToImage = (await import('html-to-image')).default;
+      try {
+        const dataUrl = await htmlToImage.toSvg(element as HTMLElement, { backgroundColor: theme === 'light' ? '#f9fafb' : '#0f172a' });
+        const link = document.createElement('a');
+        link.download = `flow-${schemaName}.svg`;
+        link.href = dataUrl;
+        link.click();
+      } catch (err) {
+        alert('Ошибка экспорта: ' + (err as Error).message);
+      }
+    }
+  };
+
+  const exportDXF = () => {
+    exportToDxf(nodes, edges, schemaName || 'scheme');
+  };
+
+  const handleLoadSchema = (id: string) => {
+    const schema = loadSchema(id);
+    if (schema) {
+      setNodes(schema.nodes);
+      setEdges(schema.edges);
+    }
+  };
+
+  const handleNewSchema = () => {
+    const { nodes: emptyNodes, edges: emptyEdges } = newSchema();
+    setNodes(emptyNodes);
+    setEdges(emptyEdges);
+  };
+
   const handleSaveSchema = () => saveCurrentSchema(nodes, edges);
 
   const handleUpdateNode = (nodeId: string, updates: Partial<DeviceNodeData>) => {
@@ -545,7 +610,7 @@ const FlowEditor: React.FC = () => {
     setEdges((eds) =>
       eds.map((e) => {
         if (e.id === edgeId) {
-          return { ...e, data: { ...e.data, ...updates } };
+          return { ...e, data: { ...e.data, ...updates } } as Edge<CableEdgeData>;
         }
         return e;
       })
