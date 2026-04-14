@@ -107,6 +107,7 @@ export interface CableEdgeData {
   badgeBackgroundColor?: string;
   edgeStrokeWidth?: number;
   edgeStrokeColor?: string;
+  edgeBorderRadius?: number;   // <-- новое поле
   sourceLabelText?: string;
   targetLabelText?: string;
   markerFontSize?: number;
