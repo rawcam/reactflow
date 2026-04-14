@@ -9,7 +9,7 @@ const toDxfY = (y: number, maxY: number) => maxY - y;
 
 type HandlePosition = Position.Left | Position.Right | Position.Top | Position.Bottom;
 
-// Генерация ортогонального пути (возвращает массив точек [x, y])
+// УЛУЧШЕННАЯ ФУНКЦИЯ: Генерация ортогонального пути (возвращает массив точек [x, y])
 const generateOrthoPoints = (
   sourceX: number, sourceY: number,
   targetX: number, targetY: number,
@@ -20,10 +20,11 @@ const generateOrthoPoints = (
     sourceX, sourceY, targetX, targetY,
     sourcePosition: sourcePos,
     targetPosition: targetPos,
-    borderRadius: 8,
+    borderRadius: 8, // Можно поставить 0 для идеально прямых углов
   });
   const points: [number, number][] = [];
-  const commands = path.match(/[MLC]\s*[\d.]+\s*[\d.]+/g) || [];
+  // Более надежный разбор SVG-пути
+  const commands = path.match(/[ML]\s*[\d.]+\s*[\d.]+/g) || [];
   commands.forEach(cmd => {
     const parts = cmd.match(/[\d.]+/g);
     if (parts && parts.length >= 2) {
@@ -39,12 +40,14 @@ const mapColorToAci = (hex: string): number => {
   const g = parseInt(hex.slice(3,5), 16);
   const b = parseInt(hex.slice(5,7), 16);
   
-  if (r === 37 && g === 99 && b === 235) return 5; // #2563eb
-  if (r === 239 && g === 68 && b === 68) return 1; // #ef4444
-  if (r === 16 && g === 185 && b === 129) return 3; // #10b981
-  if (r === 0 && g === 0 && b === 0) return 7;
-  if (r === 255 && g === 255 && b === 255) return 7;
+  // Стандартные цвета
+  if (r === 239 && g === 68 && b === 68) return 1;   // #ef4444 → красный
+  if (r === 16 && g === 185 && b === 129) return 3;  // #10b981 → зелёный
+  if (r === 37 && g === 99 && b === 235) return 5;   // #2563eb → синий
+  if (r === 0 && g === 0 && b === 0) return 7;       // чёрный
+  if (r === 255 && g === 255 && b === 255) return 7; // белый
   
+  // Для остальных — подбор ближайшего по яркости
   const brightness = r * 0.299 + g * 0.587 + b * 0.114;
   return Math.max(1, Math.min(255, Math.round(brightness / 255 * 254) + 1));
 };
@@ -121,8 +124,17 @@ export const exportToDxf = (
         targetInterface ? Position.Left : Position.Bottom
       );
 
+      const colorAci = mapColorToAci(edge.data?.edgeStrokeColor || '#2563eb');
+      const width = edge.data?.edgeStrokeWidth || 2;
+      const layerName = `edge-color-${colorAci}`;
+
+      // ИСПРАВЛЕНО: Создаём отдельный слой для каждого цвета
+      if (!d.layers[layerName]) {
+        d.addLayer(layerName, colorAci, 'CONTINUOUS');
+      }
+      d.setActiveLayer(layerName);
+
       if (points.length >= 2) {
-        // ✅ ИСПРАВЛЕНО: передаём массив кортежей [x, y]
         const dxfPoints: [number, number][] = points.map(p => [p[0], toDxfY(p[1], maxY)]);
         d.drawPolyline(dxfPoints);
       } else {
@@ -138,14 +150,25 @@ export const exportToDxf = (
       }
     });
 
+    // Возвращаем активный слой на "0" для нод
+    d.setActiveLayer('0');
+
     // --- Ноды ---
     nodes.forEach(node => {
       const w = (node.data.width as number) || 90;
       const h = (node.data.height as number) || 90;
       const x = node.position.x;
       const y = node.position.y;
+      const colorAci = mapColorToAci(node.data.color || '#2563eb');
+      const layerName = `node-color-${colorAci}`;
 
-      // ✅ ИСПРАВЛЕНО: передаём массив кортежей [x, y] для рамки ноды
+      // Создаём отдельный слой для цвета ноды
+      if (!d.layers[layerName]) {
+        d.addLayer(layerName, colorAci, 'CONTINUOUS');
+      }
+      d.setActiveLayer(layerName);
+
+      // Рамка ноды (замкнутая полилиния)
       const pts: [number, number][] = [
         [x, toDxfY(y, maxY)],
         [x + w, toDxfY(y, maxY)],
@@ -158,15 +181,27 @@ export const exportToDxf = (
       // Текст метки ноды
       d.drawText(x + 5, toDxfY(y + 15, maxY), 10, 0, node.data.label);
 
-      // Хендлы (точки подключения)
+      // Хендлы и подписи портов
       const rowHeight = node.data.rowHeight || 22;
-      node.data.inputs.forEach((_, idx) => {
+      
+      // Входы (inputs)
+      node.data.inputs.forEach((port, idx) => {
         const offsetY = y + 40 + (idx + 0.5) * rowHeight;
-        d.drawCircle(x - 8, toDxfY(offsetY, maxY), 3);
+        const dxfY = toDxfY(offsetY, maxY);
+        // Рисуем кружок хендла
+        d.drawCircle(x - 8, dxfY, 3);
+        // ИСПРАВЛЕНО: Добавляем подпись порта
+        d.drawText(x - 20, dxfY - 2, 6, 0, port.name);
       });
-      node.data.outputs.forEach((_, idx) => {
+      
+      // Выходы (outputs)
+      node.data.outputs.forEach((port, idx) => {
         const offsetY = y + 40 + (idx + 0.5) * rowHeight;
-        d.drawCircle(x + w + 8, toDxfY(offsetY, maxY), 3);
+        const dxfY = toDxfY(offsetY, maxY);
+        // Рисуем кружок хендла
+        d.drawCircle(x + w + 8, dxfY, 3);
+        // ИСПРАВЛЕНО: Добавляем подпись порта
+        d.drawText(x + w + 15, dxfY - 2, 6, 0, port.name);
       });
     });
 
