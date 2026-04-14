@@ -57,6 +57,7 @@ const CableEdge: FC<any> = ({
       : d.cableType || 'Cable';
 
   const hideMainBadge = d.hideMainBadge ?? false;
+  const hideMarkers = d.hideMarkers ?? false;
 
   const edgeStyle = {
     ...(style as React.CSSProperties),
@@ -132,12 +133,12 @@ const CableEdge: FC<any> = ({
         markerStart={markerStart}
       />
       <EdgeLabelRenderer>
-        {sourceLabel && (
+        {!hideMarkers && sourceLabel && (
           <div style={{ ...markerStyle, left: sourcePos.x, top: sourcePos.y }} className="nodrag nopan">
             {sourceLabel}
           </div>
         )}
-        {targetLabel && (
+        {!hideMarkers && targetLabel && (
           <div style={{ ...markerStyle, left: targetPos.x, top: targetPos.y }} className="nodrag nopan">
             {targetLabel}
           </div>
