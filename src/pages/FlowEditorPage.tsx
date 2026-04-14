@@ -116,7 +116,6 @@ const FlowEditor: React.FC = () => {
     visible: false, x: 0, y: 0, edgeId: null,
   });
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  // ✅ Сайдбар свёрнут по умолчанию
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -144,7 +143,6 @@ const FlowEditor: React.FC = () => {
   const updateGridOpacity = (opacity: number) => saveGridSettings({ ...gridSettings, opacity });
   const updateGridVisible = (visible: boolean) => saveGridSettings({ ...gridSettings, visible });
 
-  // ✅ Убираем демо-устройства – оставляем useEffect пустым
   useEffect(() => {
     // Пустой холст при запуске
   }, [schemas]);
@@ -189,15 +187,14 @@ const FlowEditor: React.FC = () => {
       const sourceLabel = `${sourceNode.data.label}: ${sourceInterface.name}`;
       const targetLabel = `${targetNode.data.label}: ${targetInterface.name}`;
       
-      // ✅ Дефолтные значения стилей
       const cableData: CableEdgeData = {
         cableType,
         sourceLabel,
         targetLabel,
         adapter: compat.adapter,
         edgeStrokeColor: edgeColor,
-        edgeStrokeWidth: 1,                // толщина 1px
-        edgeBorderRadius: 2,               // скругление 2px
+        edgeStrokeWidth: 1,
+        edgeBorderRadius: 2,
         badgeFontSize: 6,
         badgeTextColor: '#2563eb',
         badgeBorderColor: '#2563eb',
@@ -205,10 +202,10 @@ const FlowEditor: React.FC = () => {
         badgeBorderRadius: 12,
         badgeBackgroundColor: '#ffffff',
         markerFontSize: 5,
-        markerTextColor: '#000000',        // чёрный текст маркировок
+        markerTextColor: '#000000',
         markerBorderColor: '#2563eb',
         markerBorderWidth: 1,
-        markerBorderRadius: 2,             // скругление 2px
+        markerBorderRadius: 2,
         markerBackgroundColor: '#ffffff',
         hideMainBadge: false,
         hideMarkers: false,
@@ -288,7 +285,6 @@ const FlowEditor: React.FC = () => {
     setNodes(nds => [...nds, newNode]);
   };
 
-  // ✅ Создание ноды с чёрной обводкой и скруглением 2px
   const addNewNode = () => {
     const newId = Date.now().toString();
     const newNode: Node<DeviceNodeData> = {
@@ -300,8 +296,8 @@ const FlowEditor: React.FC = () => {
         icon: 'fas fa-microchip',
         inputs: [{ id: `in-${newId}-1`, name: 'Вход 1', direction: 'input', connector: 'HDMI', protocol: 'HDMI' }],
         outputs: [{ id: `out-${newId}-1`, name: 'Выход 1', direction: 'output', connector: 'HDMI', protocol: 'HDMI' }],
-        color: '#000000',           // чёрная обводка
-        borderRadius: 2,            // скругление 2px
+        color: '#000000',
+        borderRadius: 2,
         borderWidth: 1,
       },
     };
@@ -549,36 +545,28 @@ const FlowEditor: React.FC = () => {
     event.target.value = '';
   };
 
-  // ✅ Улучшенная функция экспорта SVG с логированием
+  // ✅ Новая функция экспорта SVG с dom-to-image-more
   const exportSVG = async () => {
     const element = document.querySelector('.react-flow');
     if (!element) {
-      console.error('❌ Элемент .react-flow не найден');
-      alert('Не удалось найти область схемы для экспорта');
+      alert('Не удалось найти область схемы');
       return;
     }
 
     try {
-      const htmlToImage = (await import('html-to-image')).default;
-      console.log('🎨 Начинаем экспорт SVG...');
-      
-      const dataUrl = await htmlToImage.toSvg(element as HTMLElement, {
-        backgroundColor: theme === 'light' ? '#f9fafb' : '#0f172a',
-        fetchRequestInit: {
-          mode: 'cors',
-          credentials: 'omit',
-        },
+      const domtoimage = await import('dom-to-image-more');
+      const dataUrl = await domtoimage.toSvg(element as HTMLElement, {
+        bgcolor: theme === 'light' ? '#f9fafb' : '#0f172a',
+        copyDefaultStyles: true, // важно для CSS-переменных
       });
 
-      console.log('✅ SVG сгенерирован, размер:', dataUrl.length);
-      
       const link = document.createElement('a');
       link.download = `flow-${schemaName || 'scheme'}.svg`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
-      console.error('❌ Ошибка экспорта SVG:', err);
-      alert('Ошибка экспорта SVG: ' + (err as Error).message);
+      console.error('Ошибка экспорта SVG:', err);
+      alert('Ошибка экспорта: ' + (err as Error).message);
     }
   };
 
