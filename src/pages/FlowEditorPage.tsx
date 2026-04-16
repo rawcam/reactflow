@@ -114,7 +114,7 @@ const checkCompatibility = (
   return { compatible: false };
 };
 
-// Словарь цветов (без лишних слов)
+// Словарь цветов
 const CABLE_TYPE_COLORS: Record<string, string> = {
   'HDMI/DVI': '#7F1F00',
   'Оптические линии': '#FF00FF',
@@ -149,7 +149,6 @@ const PROTOCOL_PREFIX_MAP: Record<string, string> = {
   'USB': 'usb',
 };
 
-// Генерация следующей маркировки по префиксу
 const generateNextMark = (edges: Edge<CableEdgeData>[], prefix: string): string => {
   const regex = new RegExp(`^${prefix}(\\d+)$`, 'i');
   let maxNum = 0;
@@ -194,9 +193,12 @@ const FlowEditor: React.FC = () => {
       format: 'a4',
       orientation: 'landscape',
       visible: false,
+      draggable: false,
     };
     return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
   });
+  const [framePosition, setFramePosition] = useState({ x: 0, y: 0 });
+  const [isDraggingFrame, setIsDraggingFrame] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; nodeId: string | null }>({
     visible: false, x: 0, y: 0, nodeId: null,
   });
@@ -612,6 +614,24 @@ const FlowEditor: React.FC = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [nodes, edges]);
 
+  // Перетаскивание рамки
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDraggingFrame || !printSettings.draggable) return;
+      setFramePosition(prev => ({
+        x: prev.x + e.movementX,
+        y: prev.y + e.movementY,
+      }));
+    };
+    const handleMouseUp = () => setIsDraggingFrame(false);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDraggingFrame, printSettings.draggable]);
+
   const applyNodeStyleToAll = (styles: Partial<DeviceNodeData>) => {
     setNodes((nds) =>
       nds.map((n) => ({
@@ -626,6 +646,66 @@ const FlowEditor: React.FC = () => {
     localStorage.setItem('handle_hover_enabled', JSON.stringify(enabled));
     setNodes(nds => nds.map(n => ({ ...n, data: { ...n.data, showHandleHover: enabled } })));
   };
+
+  const handleAlignNodes = useCallback((type: string) => {
+    const selectedNodes = nodes.filter(n => n.selected);
+    if (selectedNodes.length < 2) {
+      alert('Выберите хотя бы два узла');
+      return;
+    }
+
+    const bounds = selectedNodes.reduce((acc, n) => ({
+      minX: Math.min(acc.minX, n.position.x),
+      maxX: Math.max(acc.maxX, n.position.x + (n.width || 90)),
+      minY: Math.min(acc.minY, n.position.y),
+      maxY: Math.max(acc.maxY, n.position.y + (n.height || 100)),
+    }), { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity });
+
+    setNodes(nds => nds.map(n => {
+      if (!n.selected) return n;
+      const newPos = { ...n.position };
+      const w = n.width || 90;
+      const h = n.height || 100;
+
+      switch (type) {
+        case 'left':
+          newPos.x = bounds.minX;
+          break;
+        case 'right':
+          newPos.x = bounds.maxX - w;
+          break;
+        case 'top':
+          newPos.y = bounds.minY;
+          break;
+        case 'bottom':
+          newPos.y = bounds.maxY - h;
+          break;
+        case 'horizontal': {
+          const sortedByX = selectedNodes.sort((a, b) => a.position.x - b.position.x);
+          const totalWidth = bounds.maxX - bounds.minX;
+          const step = totalWidth / (selectedNodes.length - 1);
+          sortedByX.forEach((node, index) => {
+            if (node.id === n.id) {
+              newPos.x = bounds.minX + index * step - (n.width || 90) / 2;
+            }
+          });
+          break;
+        }
+        case 'vertical': {
+          const sortedByY = selectedNodes.sort((a, b) => a.position.y - b.position.y);
+          const totalHeight = bounds.maxY - bounds.minY;
+          const stepY = totalHeight / (selectedNodes.length - 1);
+          sortedByY.forEach((node, index) => {
+            if (node.id === n.id) {
+              newPos.y = bounds.minY + index * stepY - (n.height || 100) / 2;
+            }
+          });
+          break;
+        }
+      }
+      return { ...n, position: newPos };
+    }));
+  }, [nodes, setNodes]);
 
   const saveSchemaToFile = () => {
     const schema: SavedSchema = {
@@ -874,6 +954,7 @@ const FlowEditor: React.FC = () => {
         onUpdatePrintSettings={updatePrintSettings}
         handleHoverEnabled={handleHoverEnabled}
         onToggleHandleHover={toggleHandleHover}
+        onAlignNodes={handleAlignNodes}
         theme={theme}
         onToggleTheme={handleToggleTheme}
         collapsed={sidebarCollapsed}
@@ -911,14 +992,20 @@ const FlowEditor: React.FC = () => {
             <div
               style={{
                 position: 'absolute',
-                left: -frameSize.width / 2,
-                top: -frameSize.height / 2,
+                left: framePosition.x - frameSize.width / 2,
+                top: framePosition.y - frameSize.height / 2,
                 width: frameSize.width,
                 height: frameSize.height,
                 border: '2px dashed #ef4444',
                 backgroundColor: 'rgba(239, 68, 68, 0.05)',
-                pointerEvents: 'none',
+                pointerEvents: printSettings.draggable ? 'all' : 'none',
+                cursor: printSettings.draggable ? 'move' : 'default',
                 zIndex: 5,
+              }}
+              onMouseDown={(e) => {
+                if (!printSettings.draggable) return;
+                e.stopPropagation();
+                setIsDraggingFrame(true);
               }}
             >
               <div
@@ -932,6 +1019,7 @@ const FlowEditor: React.FC = () => {
                   padding: '2px 6px',
                   borderRadius: 4,
                   opacity: 0.8,
+                  pointerEvents: 'none',
                 }}
               >
                 {printSettings.format.toUpperCase()} {printSettings.orientation === 'landscape' ? '🏞️' : '📄'}
@@ -940,7 +1028,7 @@ const FlowEditor: React.FC = () => {
           )}
         </ReactFlow>
 
-        <div className="flow-statusbar">
+        <div className="flow-statusbar" style={{ minHeight: 48, height: 'auto', padding: '8px 16px' }}>
           <div className="status-left">
             <span><i className="fas fa-microchip"></i> {nodes.length} устр.</span>
             <span><i className="fas fa-plug"></i> {edges.length} каб.</span>
