@@ -156,7 +156,7 @@ const DeviceNode: React.FC<NodeProps> = ({ id, data, selected }) => {
                       style={{
                         background: effectiveBorderColor,
                         top: '50%',
-                        right: -handleRightOffset,
+                        right: -borderWidth,
                         transform: 'translateY(-50%)',
                         width: 8,
                         height: 1,
