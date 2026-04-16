@@ -258,3 +258,49 @@ body {
 .react-flow__node {
   overflow: visible !important;
 }
+/* Усиление ховера в сайдбаре */
+.section-header:hover {
+  background: rgba(59, 130, 246, 0.15) !important;
+}
+
+.sidebar-actions button:hover {
+  background: rgba(59, 130, 246, 0.15) !important;
+  border-color: var(--accent) !important;
+}
+
+/* Строка состояния */
+.flow-statusbar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 26px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.flow-statusbar span {
+  pointer-events: auto;
+}
+
+.flow-statusbar .status-left,
+.flow-statusbar .status-center,
+.flow-statusbar .status-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Круглый ховер для хендлов (опционально) */
+.react-flow__handle.handle-hover-visible:hover {
+  box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.3) !important;
+  background: #3b82f6 !important;
+}
