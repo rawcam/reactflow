@@ -36,11 +36,9 @@ const generatePortName = (
     else if (protocol === 'HDBaseT') baseName = 'HDBaseT';
     else if (protocol === 'AES67') baseName = 'AES67';
     else if (protocol === 'AVB') baseName = 'AVB';
-    else baseName = protocol; // на всякий случай
+    else baseName = protocol;
   } else if (connector === 'Db9' || connector === 'Db25') {
     baseName = protocol === 'MIDI' ? 'MIDI' : 'RS-232';
-  } else if (connector === 'Terminal') {
-    baseName = 'Terminal';
   }
 
   // Направление: IN или OUT
@@ -61,7 +59,6 @@ const generatePortName = (
 
   return `${prefix} ${maxNum + 1}`;
 };
-
 const EditNodeModal: React.FC<EditNodeModalProps> = ({ isOpen, node, onClose, onSave }) => {
   const [editedData, setEditedData] = useState<DeviceNodeData | null>(null);
   const [showIconPicker, setShowIconPicker] = useState(false);
