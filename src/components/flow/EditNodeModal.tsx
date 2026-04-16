@@ -20,7 +20,7 @@ const COLOR_PALETTE = [
 ];
 
 const EditNodeModal: React.FC<EditNodeModalProps> = ({ isOpen, node, onClose, onSave }) => {
-  const [editedData, setEditedData] = React.useState<DeviceNodeData | null>(null);
+  const [editedData, setEditedData] = useState<DeviceNodeData | null>(null);
   const [showIconPicker, setShowIconPicker] = useState(false);
 
   React.useEffect(() => {
