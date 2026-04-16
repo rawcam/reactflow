@@ -1,60 +1,64 @@
-import { useState, useCallback } from 'react';
+// src/hooks/useFlowSchemas.ts
+import { useState, useEffect } from 'react';
 import { Node, Edge } from '@xyflow/react';
 import { DeviceNodeData, CableEdgeData, SavedSchema } from '../types/flowTypes';
 
-// ... остальной код без изменений
+const STORAGE_KEY = 'flow_schemas';
 
 export const useFlowSchemas = () => {
   const [schemas, setSchemas] = useState<SavedSchema[]>([]);
   const [currentSchemaId, setCurrentSchemaId] = useState<string | null>(null);
-  const [schemaName, setSchemaName] = useState('Новая схема');
+  const [schemaName, setSchemaName] = useState('');
 
-  const saveCurrentSchema = useCallback((nodes: Node<DeviceNodeData>[], edges: Edge<CableEdgeData>[]) => {
-    if (!schemaName) return;
-    const newSchema: SavedSchema = {
-      id: currentSchemaId || Date.now().toString(),
-      name: schemaName,
-      nodes,
-      edges,
-    };
-    setSchemas(prev => {
-      const exists = prev.find(s => s.id === newSchema.id);
-      if (exists) {
-        return prev.map(s => s.id === newSchema.id ? newSchema : s);
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        setSchemas(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse schemas', e);
       }
-      return [...prev, newSchema];
-    });
-    setCurrentSchemaId(newSchema.id);
-  }, [schemaName, currentSchemaId]);
+    }
+  }, []);
 
-  const loadSchema = useCallback((id: string) => {
+  const saveSchemas = (newSchemas: SavedSchema[]) => {
+    setSchemas(newSchemas);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newSchemas));
+  };
+
+  const saveCurrentSchema = (nodes: Node<DeviceNodeData>[], edges: Edge<CableEdgeData>[]) => {
+    if (!schemaName.trim()) {
+      alert('Введите название схемы');
+      return;
+    }
+    const id = currentSchemaId || Date.now().toString();
+    const newSchema: SavedSchema = { id, name: schemaName, nodes, edges };
+    const updated = schemas.filter(s => s.id !== id).concat(newSchema);
+    saveSchemas(updated);
+    setCurrentSchemaId(id);
+  };
+
+  const loadSchema = (id: string): SavedSchema | undefined => {
     const schema = schemas.find(s => s.id === id);
     if (schema) {
       setCurrentSchemaId(schema.id);
       setSchemaName(schema.name);
-      return schema;
     }
-    return null;
-  }, [schemas]);
+    return schema;
+  };
 
-  const newSchema = useCallback(() => {
+  const newSchema = () => {
     setCurrentSchemaId(null);
-    setSchemaName('Новая схема');
+    setSchemaName('');
     return { nodes: [], edges: [] };
-  }, []);
+  };
 
-  const importSchema = useCallback((schema: SavedSchema) => {
-    setSchemas(prev => {
-      const exists = prev.find(s => s.id === schema.id);
-      if (exists) {
-        return prev.map(s => s.id === schema.id ? schema : s);
-      }
-      return [...prev, schema];
-    });
+  const importSchema = (schema: SavedSchema) => {
     setCurrentSchemaId(schema.id);
     setSchemaName(schema.name);
-    return schema;
-  }, []);
+    const updated = schemas.filter(s => s.id !== schema.id).concat(schema);
+    saveSchemas(updated);
+  };
 
   return {
     schemas,
