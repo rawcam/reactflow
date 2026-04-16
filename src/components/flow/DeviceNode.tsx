@@ -3,7 +3,8 @@ import React, { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { DeviceNodeData } from '../../types/flowTypes';
 
-const DeviceNode: React.FC<NodeProps<DeviceNodeData>> = ({ data, selected }) => {
+const DeviceNode: React.FC<NodeProps> = ({ data, selected }) => {
+  const nodeData = data as DeviceNodeData;
   const {
     label,
     icon = 'fas fa-microchip',
@@ -20,7 +21,7 @@ const DeviceNode: React.FC<NodeProps<DeviceNodeData>> = ({ data, selected }) => 
     width: nodeWidthProp,
     powerSupply,
     videoLatencyMs,
-  } = data;
+  } = nodeData;
 
   const maxRows = Math.max(inputs.length, outputs.length);
   const headerHeight = 36;
