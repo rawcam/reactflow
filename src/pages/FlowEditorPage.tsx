@@ -81,24 +81,27 @@ const checkCompatibility = (
   }
 
   // RJ45
-  if (source.connector === 'RJ45' && target.connector === 'RJ45') {
-    if (source.poe && target.poe && source.poePower && target.poePower) {
-      if (source.poePower >= target.poePower) {
-        return { compatible: true, cableType: 'Кодированный сигнал' };
-      } else {
-        return { compatible: false };
-      }
+if (source.connector === 'RJ45' && target.connector === 'RJ45') {
+  // PoE проверка (часто для HDBaseT)
+  if (source.poe && target.poe && source.poePower && target.poePower) {
+    if (source.poePower >= target.poePower) {
+      return { compatible: true, cableType: 'Кодированный сигнал' };
+    } else {
+      return { compatible: false };
     }
-    if (source.protocol === 'Ethernet' && target.protocol === 'Ethernet') {
-      return { compatible: true, cableType: 'Управление' };
-    }
-    if (source.protocol === 'Dante' || target.protocol === 'Dante' ||
-        source.protocol === 'AES67' || target.protocol === 'AES67' ||
-        source.protocol === 'AVoIP' || target.protocol === 'AVoIP') {
-      return { compatible: true, cableType: 'Аудио' };
-    }
+  }
+  if (source.protocol === 'Ethernet' && target.protocol === 'Ethernet') {
+    return { compatible: true, cableType: 'Управление' };
+  }
+  // Аудио-протоколы по RJ45 тоже получают оранжевый цвет (Кодированный сигнал)
+  if (source.protocol === 'Dante' || target.protocol === 'Dante' ||
+      source.protocol === 'AES67' || target.protocol === 'AES67' ||
+      source.protocol === 'AVoIP' || target.protocol === 'AVoIP') {
     return { compatible: true, cableType: 'Кодированный сигнал' };
   }
+  // По умолчанию для RJ45 (например, просто Ethernet без PoE) – кодированный сигнал
+  return { compatible: true, cableType: 'Кодированный сигнал' };
+}
 
   // RS-232/RS-485
   if ((source.connector === 'Db9' || source.connector === 'Db25') &&
