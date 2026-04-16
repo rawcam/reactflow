@@ -17,7 +17,8 @@
     "@reduxjs/toolkit": "^1.9.5",
     "@xyflow/react": "^12.8.3",
     "dom-to-image-more": "^3.1.0",
-    "dxf-writer": "^1.18.0"
+    "dxf-writer": "^1.18.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/react": "^18.2.45",
