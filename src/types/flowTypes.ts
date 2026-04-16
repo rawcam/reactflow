@@ -90,7 +90,7 @@ export interface SavedSchema {
   edges: any[];
 }
 
-// Дополнительные типы для модалки (если используются)
+// Дополнительные типы для модалки
 export type ConnectorType = 
   | 'HDMI' | 'DisplayPort' | 'DVI' | 'VGA' 
   | 'RJ45' | 'XLR' | 'RCA' | 'TRS' | 'USB' 
