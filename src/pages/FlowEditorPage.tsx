@@ -759,57 +759,55 @@ const FlowEditor: React.FC = () => {
     return { devices: nodes.length, edges: edges.length, totalPower, poeProvided, poeConsumed };
   };
 
- const rows = edges.map((edge, index) => {
-  const sourceNode = nodes.find(n => n.id === edge.source);
-  const targetNode = nodes.find(n => n.id === edge.target);
-  const cableType = edge.data?.cableType || '';
+ const exportToExcel = () => {
+  const rows = edges.map((edge, index) => {
+    const sourceNode = nodes.find(n => n.id === edge.source);
+    const targetNode = nodes.find(n => n.id === edge.target);
+    const cableType = edge.data?.cableType || '';
 
-  // Получаем интерфейсы
-  const sourceInterface = sourceNode ? [...sourceNode.data.inputs, ...sourceNode.data.outputs].find(i => i.id === edge.sourceHandle) : null;
-  const targetInterface = targetNode ? [...targetNode.data.inputs, ...targetNode.data.outputs].find(i => i.id === edge.targetHandle) : null;
+    const sourceInterface = sourceNode ? [...sourceNode.data.inputs, ...sourceNode.data.outputs].find(i => i.id === edge.sourceHandle) : null;
+    const targetInterface = targetNode ? [...targetNode.data.inputs, ...targetNode.data.outputs].find(i => i.id === edge.targetHandle) : null;
 
-  // Формируем разъём с гендером для прибора
-  const sourceConnector = sourceInterface ? `${sourceInterface.connector}(${sourceInterface.direction === 'input' ? 'f' : 'm'})` : '';
-  const targetConnector = targetInterface ? `${targetInterface.connector}(${targetInterface.direction === 'output' ? 'f' : 'm'})` : '';
+    const sourceConnector = sourceInterface ? `${sourceInterface.connector}(${sourceInterface.direction === 'input' ? 'f' : 'm'})` : '';
+    const targetConnector = targetInterface ? `${targetInterface.connector}(${targetInterface.direction === 'output' ? 'f' : 'm'})` : '';
 
-  // Разъём кабеля — просто название разъёма (без гендера)
-  const sourceCableConnector = sourceInterface ? sourceInterface.connector : '';
-  const targetCableConnector = targetInterface ? targetInterface.connector : '';
+    const sourceCableConnector = sourceInterface ? sourceInterface.connector : '';
+    const targetCableConnector = targetInterface ? targetInterface.connector : '';
 
-  return [
-    index + 1,
-    edge.data?.sourceLabelText || edge.data?.sourceLabel?.split(':')[1]?.trim() || '',
-    edge.data?.targetLabelText || edge.data?.targetLabel?.split(':')[1]?.trim() || '',
-    sourceNode?.data.label || '',
-    sourceConnector,                    // разъём на приборе (начало)
-    sourceNode?.data.place || '',
-    sourceCableConnector,               // разъём на кабеле (начало)
-    targetNode?.data.label || '',
-    targetConnector,                    // разъём на приборе (конец)
-    targetNode?.data.place || '',
-    targetCableConnector,               // разъём на кабеле (конец)
-    cableType,
-    edge.data?.cableLength || '',
-    edge.data?.cableMark || '',
-  ];
-});
-
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet([
-      ['№ п/п', 'Маркировка кабеля', '', 'Начало', '', '', '', 'Конец', '', '', '', 'Проложен', '', ''],
-      ['', 'Начало', 'Конец', 'Обозначение прибора', 'Разъем на приборе', 'Место размещения', 'Разъем на кабеле', 'Обозначение прибора', 'Разъем на приборе', 'Место размещения', 'Разъем на кабеле', 'Тип сигнала', 'Длина, м', 'Марка'],
-      ...rows,
-    ]);
-    ws['!merges'] = [
-      { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } },
-      { s: { r: 0, c: 1 }, e: { r: 0, c: 2 } },
-      { s: { r: 0, c: 3 }, e: { r: 0, c: 6 } },
-      { s: { r: 0, c: 7 }, e: { r: 0, c: 10 } },
-      { s: { r: 0, c: 11 }, e: { r: 0, c: 13 } },
+    return [
+      index + 1,
+      edge.data?.sourceLabelText || edge.data?.sourceLabel?.split(':')[1]?.trim() || '',
+      edge.data?.targetLabelText || edge.data?.targetLabel?.split(':')[1]?.trim() || '',
+      sourceNode?.data.label || '',
+      sourceConnector,
+      sourceNode?.data.place || '',
+      sourceCableConnector,
+      targetNode?.data.label || '',
+      targetConnector,
+      targetNode?.data.place || '',
+      targetCableConnector,
+      cableType,
+      edge.data?.cableLength || '',
+      edge.data?.cableMark || '',
     ];
-    XLSX.utils.book_append_sheet(wb, ws, 'Кабельный журнал');
-    XLSX.writeFile(wb, `${schemaName || 'scheme'}_cable_journal.xlsx`);
-  };
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([
+    ['№ п/п', 'Маркировка кабеля', '', 'Начало', '', '', '', 'Конец', '', '', '', 'Проложен', '', ''],
+    ['', 'Начало', 'Конец', 'Обозначение прибора', 'Разъем на приборе', 'Место размещения', 'Разъем на кабеле', 'Обозначение прибора', 'Разъем на приборе', 'Место размещения', 'Разъем на кабеле', 'Тип сигнала', 'Длина, м', 'Марка'],
+    ...rows,
+  ]);
+  ws['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } },
+    { s: { r: 0, c: 1 }, e: { r: 0, c: 2 } },
+    { s: { r: 0, c: 3 }, e: { r: 0, c: 6 } },
+    { s: { r: 0, c: 7 }, e: { r: 0, c: 10 } },
+    { s: { r: 0, c: 11 }, e: { r: 0, c: 13 } },
+  ];
+  XLSX.utils.book_append_sheet(wb, ws, 'Кабельный журнал');
+  XLSX.writeFile(wb, `${schemaName || 'scheme'}_cable_journal.xlsx`);
+};
 
   const clearCanvas = () => {
     if (window.confirm('Очистить холст? Все несохранённые изменения будут потеряны.')) {
