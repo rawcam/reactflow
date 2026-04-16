@@ -145,7 +145,7 @@ const DeviceNode: React.FC<NodeProps> = ({ id, data, selected }) => {
               <div style={{ flex: 1, textAlign: 'right', position: 'relative' }}>
                 {output && (
                   <>
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...getPortStyle(output) }}>
+                    <span style={{ overflow: 'visible', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...getPortStyle(output) }}>
                       {output.name}
                     </span>
                     <Handle
