@@ -17,6 +17,7 @@ const DeviceNode: React.FC<NodeProps> = ({ id, data, selected }) => {
   const portFontSize = d.portFontSize ?? 6;
   const headerFontWeight = d.headerFontWeight ?? 'normal';
   const rowHeight = d.rowHeight ?? 22;
+  const showHandleHover = d.showHandleHover ?? false;
 
   const handleLabelSubmit = () => {
     if (editLabel.trim()) d.label = editLabel;
@@ -60,6 +61,8 @@ const DeviceNode: React.FC<NodeProps> = ({ id, data, selected }) => {
 
   const isNetworkSwitch = d.deviceType === 'network_switch';
   const highlightPorts = isNetworkSwitch && (d.networkSwitchConfig?.highlightPorts ?? true);
+
+  const handleClass = showHandleHover ? 'handle-hover-visible' : '';
 
   const getPortStyle = (iface: any) => {
     if (!highlightPorts) return {};
@@ -124,6 +127,7 @@ const DeviceNode: React.FC<NodeProps> = ({ id, data, selected }) => {
                       type="target"
                       position={Position.Left}
                       id={input.id}
+                      className={handleClass}
                       style={{
                         background: effectiveBorderColor,
                         top: '50%',
@@ -148,6 +152,7 @@ const DeviceNode: React.FC<NodeProps> = ({ id, data, selected }) => {
                       type="source"
                       position={Position.Right}
                       id={output.id}
+                      className={handleClass}
                       style={{
                         background: effectiveBorderColor,
                         top: '50%',
