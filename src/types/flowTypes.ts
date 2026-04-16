@@ -53,4 +53,67 @@ export interface DeviceNodeData {
   networkSwitchConfig?: NetworkSwitchConfig;
 }
 
-// ... остальные типы (CableEdgeData, SavedSchema)
+export interface CableEdgeData {
+  [key: string]: unknown;
+  cableType?: string;
+  sourceLabel?: string;
+  targetLabel?: string;
+  sourceLabelText?: string;
+  targetLabelText?: string;
+  labelText?: string;
+  adapter?: string;
+  edgeStrokeColor?: string;
+  edgeStrokeWidth?: number;
+  edgeBorderRadius?: number;
+  badgeFontSize?: number;
+  badgeTextColor?: string;
+  badgeBorderColor?: string;
+  badgeBorderWidth?: number;
+  badgeBorderRadius?: number;
+  badgeBackgroundColor?: string;
+  markerFontSize?: number;
+  markerTextColor?: string;
+  markerBorderColor?: string;
+  markerBorderWidth?: number;
+  markerBorderRadius?: number;
+  markerBackgroundColor?: string;
+  hideMainBadge?: boolean;
+  hideMarkers?: boolean;
+  cableLength?: number;
+  cableMark?: string;
+}
+
+export interface SavedSchema {
+  id: string;
+  name: string;
+  nodes: any[];
+  edges: any[];
+}
+
+// Дополнительные типы для модалки (если используются)
+export type ConnectorType = 
+  | 'HDMI' | 'DisplayPort' | 'DVI' | 'VGA' 
+  | 'RJ45' | 'XLR' | 'RCA' | 'TRS' | 'USB' 
+  | 'Speakon' | 'Db9' | 'Db25' | 'Optical' | 'BNC';
+
+export type ProtocolType = 
+  | 'HDMI' | 'DisplayPort' | 'DVI' | 'VGA' 
+  | 'Ethernet' | 'Dante' | 'AES67' | 'AVB' 
+  | 'RS-232' | 'RS-485' | 'Аудио' | 'MIDI' | 'USB';
+
+export const CONNECTOR_PROTOCOL_MAP: Record<ConnectorType, ProtocolType[]> = {
+  'HDMI': ['HDMI'],
+  'DisplayPort': ['DisplayPort'],
+  'DVI': ['DVI'],
+  'VGA': ['VGA'],
+  'RJ45': ['Ethernet', 'Dante', 'AES67', 'AVB'],
+  'XLR': ['Аудио'],
+  'RCA': ['Аудио'],
+  'TRS': ['Аудио'],
+  'USB': ['USB'],
+  'Speakon': ['Аудио'],
+  'Db9': ['RS-232', 'RS-485'],
+  'Db25': ['RS-232', 'MIDI'],
+  'Optical': ['Аудио'],
+  'BNC': ['Аудио', 'HDMI'],
+};
