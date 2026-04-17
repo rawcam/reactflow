@@ -326,3 +326,14 @@ body {
   background: #3b82f6 !important;
   z-index: 100;
 }
+/* Иконки в свёрнутом сайдбаре — гарантированно видны */
+.sidebar.collapsed .section-header i:first-child {
+  display: inline-block !important;
+  font-size: 1.4rem !important;
+  color: var(--accent) !important;
+  margin-right: 0 !important;
+}
+.sidebar.collapsed .section-header span,
+.sidebar.collapsed .section-header i:last-child {
+  display: none !important;
+}
