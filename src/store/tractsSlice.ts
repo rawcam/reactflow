@@ -27,6 +27,11 @@ export interface TractDevice {
   latencyIn?: number;
   latencyOut?: number;
   speed?: number;
+  width_m?: number;
+  height_m?: number;
+  resW?: number;
+  resH?: number;
+  area?: number;
 }
 
 export interface Tract {
@@ -40,21 +45,27 @@ export interface Tract {
   totalPower: number;
   totalPoE: number;
   poeBudgetUsed: number;
+  networkLoadPercent?: number;
+  totalPorts?: number;
+  usedPorts?: number;
+  totalPoEBudget?: number;
+  usedPoE?: number;
 }
 
 interface TractsState {
   tracts: Tract[];
   activeTractId: string | null;
-  viewMode: 'all' | 'active';
+  viewMode: 'all' | 'active' | 'calculator';
+  activeCalculator: string | null;
 }
 
 const initialState: TractsState = {
   tracts: [],
   activeTractId: null,
   viewMode: 'all',
+  activeCalculator: null,
 };
 
-// Расчёт битрейта на основе видео настроек
 const calcBitrateFromVideo = (video: any): number => {
   const resMap: Record<string, number> = { '1080p': 1920 * 1080, '4K': 3840 * 2160, '8K': 7680 * 4320 };
   const pixels = resMap[video.resolution] || 1920 * 1080;
@@ -64,7 +75,6 @@ const calcBitrateFromVideo = (video: any): number => {
   return Math.round((pixels * video.fps * chromaFactor * colorFactor * bitDepthFactor) / 1_000_000);
 };
 
-// Пересчёт тракта
 const recalcTract = (tract: Tract, videoSettings: any, networkSettings: any): Tract => {
   let totalLatency = 0;
   let totalBitrate = 0;
@@ -87,7 +97,6 @@ const recalcTract = (tract: Tract, videoSettings: any, networkSettings: any): Tr
     }
   });
 
-  // Учёт сети
   if (networkSettings.multicast) totalBitrate *= 1.1;
   if (networkSettings.qos) totalBitrate *= 1.05;
 
@@ -101,7 +110,6 @@ const recalcTract = (tract: Tract, videoSettings: any, networkSettings: any): Tr
   };
 };
 
-// Thunk для пересчёта активного тракта
 export const recalcTractThunk = createAsyncThunk(
   'tracts/recalc',
   async (tractId: string, { getState, dispatch }) => {
@@ -113,7 +121,6 @@ export const recalcTractThunk = createAsyncThunk(
   }
 );
 
-// Thunk для обновления устройства и пересчёта
 export const updateDeviceThunk = createAsyncThunk(
   'tracts/updateDevice',
   async ({ tractId, deviceId, updates }: { tractId: string; deviceId: string; updates: Partial<TractDevice> }, { getState, dispatch }) => {
@@ -136,7 +143,6 @@ export const updateDeviceThunk = createAsyncThunk(
   }
 );
 
-// Thunk для удаления устройства
 export const removeDeviceThunk = createAsyncThunk(
   'tracts/removeDevice',
   async ({ tractId, deviceId, column }: { tractId: string; deviceId: string; column: 'source' | 'matrix' | 'sink' }, { getState, dispatch }) => {
@@ -176,8 +182,11 @@ const tractsSlice = createSlice({
     setActiveTract: (state, action: PayloadAction<string | null>) => {
       state.activeTractId = action.payload;
     },
-    setViewMode: (state, action: PayloadAction<'all' | 'active'>) => {
+    setViewMode: (state, action: PayloadAction<'all' | 'active' | 'calculator'>) => {
       state.viewMode = action.payload;
+    },
+    setActiveCalculator: (state, action: PayloadAction<string | null>) => {
+      state.activeCalculator = action.payload;
     },
     addDeviceToTract: (state, action: PayloadAction<{ tractId: string; device: TractDevice; column: 'source' | 'matrix' | 'sink' }>) => {
       const tract = state.tracts.find(t => t.id === action.payload.tractId);
@@ -189,5 +198,5 @@ const tractsSlice = createSlice({
   },
 });
 
-export const { setTracts, addTract, updateTract, deleteTract, setActiveTract, setViewMode, addDeviceToTract } = tractsSlice.actions;
+export const { setTracts, addTract, updateTract, deleteTract, setActiveTract, setViewMode, setActiveCalculator, addDeviceToTract } = tractsSlice.actions;
 export default tractsSlice.reducer;
