@@ -1,61 +1,89 @@
-// src/components/calculations/TractList.tsx
-import React from 'react';
-import { Tract } from '../../store/tractsSlice';
+/* src/index.css */
+@import './variables.css';
+@import './global.css';
 
-interface TractListProps {
-  tracts: Tract[];
-  activeTractId: string | null;
-  newTractName: string;
-  onNewTractNameChange: (value: string) => void;
-  onCreateTract: () => void;
-  onSelectTract: (id: string) => void;
+/* ----- Дополнительные стили редактора схем ----- */
+.flow-editor {
+  --sidebar-width: 340px;
 }
 
-export const TractList: React.FC<TractListProps> = ({
-  tracts,
-  activeTractId,
-  newTractName,
-  onNewTractNameChange,
-  onCreateTract,
-  onSelectTract,
-}) => {
-  return (
-    <div className="tract-list">
-      <div className="tract-list-header">
-        <h3>Тракты</h3>
-        <div className="tract-create">
-          <input
-            type="text"
-            placeholder="Название тракта"
-            value={newTractName}
-            onChange={e => onNewTractNameChange(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && onCreateTract()}
-          />
-          <button className="btn-primary" onClick={onCreateTract}>
-            <i className="fas fa-plus"></i> Создать
-          </button>
-        </div>
-      </div>
-      <div className="tract-items">
-        {tracts.length === 0 ? (
-          <div className="tract-empty">Нет созданных трактов</div>
-        ) : (
-          tracts.map(tract => (
-            <div
-              key={tract.id}
-              className={`tract-item ${activeTractId === tract.id ? 'active' : ''}`}
-              onClick={() => onSelectTract(tract.id)}
-            >
-              <div className="tract-item-name">{tract.name}</div>
-              <div className="tract-item-stats">
-                <span>⏱️ {tract.totalLatency.toFixed(2)} мс</span>
-                <span>📡 {tract.totalBitrate} Мбит/с</span>
-                <span>💡 {tract.totalPower} Вт</span>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-};
+.react-flow__edge-path {
+  stroke: #2563eb;
+  stroke-width: 2;
+  animation: none !important;
+  marker-end: none !important;
+  marker-start: none !important;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #ef4444 !important;
+}
+
+.react-flow__handle {
+  width: 8px !important;
+  height: 1px !important;
+  min-width: 8px !important;
+  max-width: 8px !important;
+  min-height: 1px !important;
+  max-height: 1px !important;
+  border-radius: 0 !important;
+  border: none !important;
+  transform: translateY(-50%) !important;
+  z-index: 10 !important;
+}
+
+.react-flow__node {
+  overflow: visible !important;
+}
+
+.react-flow__handle.handle-hover-visible {
+  transition: box-shadow 0.1s;
+}
+.react-flow__handle.handle-hover-visible:hover {
+  box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.35) !important;
+  background: #3b82f6 !important;
+  z-index: 100;
+}
+
+.flow-statusbar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  min-height: 48px;
+  height: auto;
+  padding: 8px 16px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-secondary);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.flow-statusbar span {
+  pointer-events: auto;
+}
+
+.flow-statusbar .status-left,
+.flow-statusbar .status-center,
+.flow-statusbar .status-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Иконки в свёрнутом сайдбаре редактора */
+.sidebar.collapsed .section-header i:first-child {
+  display: inline-block !important;
+  font-size: 1.4rem !important;
+  color: var(--accent) !important;
+  margin-right: 0 !important;
+}
+.sidebar.collapsed .section-header span,
+.sidebar.collapsed .section-header i:last-child {
+  display: none !important;
+}
