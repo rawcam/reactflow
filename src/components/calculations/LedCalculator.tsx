@@ -65,6 +65,8 @@ export const LedCalculator: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       type: 'ledScreen',
       modelName: `LED экран ${result.resW}x${result.resH}`,
       latency: 4.5,
+      poe: false,
+      poePower: 0,
       poeEnabled: false,
       powerW: result.power,
       shortName: `LED${Math.floor(Math.random() * 1000)}`,
