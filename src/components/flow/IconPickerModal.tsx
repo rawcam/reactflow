@@ -9,7 +9,6 @@ interface IconPickerModalProps {
 }
 
 const ICON_LIST = [
-  // Основные
   'fas fa-microchip',
   'fas fa-server',
   'fas fa-desktop',
