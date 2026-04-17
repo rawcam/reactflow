@@ -1,5 +1,6 @@
 // src/pages/FlowEditorPage.tsx
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ReactFlow,
   Background,
@@ -166,8 +167,8 @@ const generateNextMark = (edges: Edge<CableEdgeData>[], prefix: string): string 
   return `${formattedPrefix} ${nextNum.toString().padStart(2, '0')}`;
 };
 
-const FlowEditor: React.FC = () => {
-  // 🔥 Правильное использование useUndoable (кортеж из 3 элементов)
+const FlowEditorPage: React.FC = () => {
+  const navigate = useNavigate();
   const [undoableNodes, setUndoableNodes, nodeUndoAPI] = useUndoable<Node<DeviceNodeData>[]>([]);
   const { undo: undoNodes, redo: redoNodes, canUndo: canUndoNodes, canRedo: canRedoNodes } = nodeUndoAPI;
   const [undoableEdges, setUndoableEdges, edgeUndoAPI] = useUndoable<Edge<CableEdgeData>[]>([]);
@@ -229,7 +230,6 @@ const FlowEditor: React.FC = () => {
   const autoSaveEnabled = true;
   const autoSaveTimer = useRef<number>();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const [searchQuery, setSearchQuery] = useState('');
 
   const { schemas, currentSchemaId, schemaName, setSchemaName, saveCurrentSchema, loadSchema, newSchema, importSchema } = useFlowSchemas();
@@ -970,224 +970,249 @@ const FlowEditor: React.FC = () => {
     : null;
 
   return (
-    <div className={`flow-editor ${theme}`} style={{ height: '100vh', display: 'flex', background: 'var(--bg-page)' }}>
-      <input type="file" accept=".json" ref={fileInputRef} style={{ display: 'none' }} onChange={loadSchemaFromFile} />
-      <Sidebar
-        selectedNode={selectedNode}
-        selectedEdge={selectedEdge}
-        onUpdateNode={handleUpdateNode}
-        onUpdateEdge={handleUpdateEdge}
-        onApplyNodeStyleToAll={applyNodeStyleToAll}
-        onApplyEdgeStyleToDevice={applyEdgeStyleToDevice}
-        schemas={schemas}
-        currentSchemaId={currentSchemaId}
-        schemaName={schemaName}
-        onSchemaNameChange={setSchemaName}
-        onLoadSchema={handleLoadSchema}
-        onNewSchema={handleNewSchema}
-        onSaveSchema={handleSaveSchema}
-        onExportSVG={exportSVG}
-        onExportDXF={exportDXF}
-        onExportExcel={exportToExcel}
-        onClearCanvas={clearCanvas}
-        onShowStatistics={() => setShowStatsModal(true)}
-        onSaveToFile={saveSchemaToFile}
-        onLoadFromFile={() => fileInputRef.current?.click()}
-        onAddNode={addNewNode}
-        gridSettings={gridSettings}
-        onUpdateGridVariant={updateGridVariant}
-        onUpdateGridGap={updateGridGap}
-        onUpdateSnapToGrid={updateSnapToGrid}
-        onUpdateGridColor={updateGridColor}
-        onUpdateGridOpacity={updateGridOpacity}
-        onUpdateGridVisible={updateGridVisible}
-        printSettings={printSettings}
-        onUpdatePrintSettings={updatePrintSettings}
-        handleHoverEnabled={handleHoverEnabled}
-        onToggleHandleHover={toggleHandleHover}
-        onAlignNodes={handleAlignNodes}
-        theme={theme}
-        onToggleTheme={handleToggleTheme}
-        collapsed={sidebarCollapsed}
-        onToggleCollapse={handleToggleSidebar}
-      />
-
-      <div style={{ flex: 1, position: 'relative' }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onReconnect={onReconnect}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          onNodeDoubleClick={(_event: any, node: any) => { setEditingNode(node); setShowModal(true); }}
-          onNodeContextMenu={onNodeContextMenu}
-          onEdgeContextMenu={onEdgeContextMenu}
-          fitView
-          snapToGrid={gridSettings.snapToGrid}
-          snapGrid={gridSettings.snapGrid}
-          connectionLineType={ConnectionLineType.Step}
-          defaultEdgeOptions={{ type: 'cableEdge', animated: false }}
-          minZoom={0.1}
-          maxZoom={4}
+    <div className="flow-editor" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-page)' }}>
+      {/* Кнопка возврата (интегрирована в верхнюю панель) */}
+      <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: 16 }}>
+        <button
+          onClick={() => navigate('/dashboard')}
+          style={{
+            background: 'var(--card-bg)',
+            border: '1px solid var(--border-light)',
+            borderRadius: '20px',
+            padding: '6px 16px',
+            fontSize: '13px',
+            cursor: 'pointer',
+            color: 'var(--text-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+          }}
         >
-          {gridSettings.visible && (
-            <div style={{ opacity: gridSettings.opacity ?? 0.5 }}>
-              <Background variant={gridSettings.variant} gap={gridSettings.gap} color={gridSettings.color || '#cbd5e1'} />
-            </div>
-          )}
-          <Controls />
-          <MiniMap />
+          <i className="fas fa-arrow-left"></i> Назад
+        </button>
+        <span style={{ fontSize: '14px', fontWeight: 500 }}>Редактор схем</span>
+        <div style={{ flex: 1 }} />
+      </div>
 
-          {printSettings.visible && (
-            <div
-              style={{
-                position: 'absolute',
-                left: framePosition.x - frameSize.width / 2,
-                top: framePosition.y - frameSize.height / 2,
-                width: frameSize.width,
-                height: frameSize.height,
-                border: '2px dashed #ef4444',
-                backgroundColor: 'rgba(239, 68, 68, 0.05)',
-                pointerEvents: printSettings.draggable ? 'all' : 'none',
-                cursor: printSettings.draggable ? 'move' : 'default',
-                zIndex: 5,
-              }}
-              onMouseDown={(e) => {
-                if (!printSettings.draggable) return;
-                e.stopPropagation();
-                setIsDraggingFrame(true);
-              }}
-            >
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        <input type="file" accept=".json" ref={fileInputRef} style={{ display: 'none' }} onChange={loadSchemaFromFile} />
+        <Sidebar
+          selectedNode={selectedNode}
+          selectedEdge={selectedEdge}
+          onUpdateNode={handleUpdateNode}
+          onUpdateEdge={handleUpdateEdge}
+          onApplyNodeStyleToAll={applyNodeStyleToAll}
+          onApplyEdgeStyleToDevice={applyEdgeStyleToDevice}
+          schemas={schemas}
+          currentSchemaId={currentSchemaId}
+          schemaName={schemaName}
+          onSchemaNameChange={setSchemaName}
+          onLoadSchema={handleLoadSchema}
+          onNewSchema={handleNewSchema}
+          onSaveSchema={handleSaveSchema}
+          onExportSVG={exportSVG}
+          onExportDXF={exportDXF}
+          onExportExcel={exportToExcel}
+          onClearCanvas={clearCanvas}
+          onShowStatistics={() => setShowStatsModal(true)}
+          onSaveToFile={saveSchemaToFile}
+          onLoadFromFile={() => fileInputRef.current?.click()}
+          onAddNode={addNewNode}
+          gridSettings={gridSettings}
+          onUpdateGridVariant={updateGridVariant}
+          onUpdateGridGap={updateGridGap}
+          onUpdateSnapToGrid={updateSnapToGrid}
+          onUpdateGridColor={updateGridColor}
+          onUpdateGridOpacity={updateGridOpacity}
+          onUpdateGridVisible={updateGridVisible}
+          printSettings={printSettings}
+          onUpdatePrintSettings={updatePrintSettings}
+          handleHoverEnabled={handleHoverEnabled}
+          onToggleHandleHover={toggleHandleHover}
+          onAlignNodes={handleAlignNodes}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={handleToggleSidebar}
+        />
+
+        <div style={{ flex: 1, position: 'relative' }}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onReconnect={onReconnect}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            onNodeDoubleClick={(_event: any, node: any) => { setEditingNode(node); setShowModal(true); }}
+            onNodeContextMenu={onNodeContextMenu}
+            onEdgeContextMenu={onEdgeContextMenu}
+            fitView
+            snapToGrid={gridSettings.snapToGrid}
+            snapGrid={gridSettings.snapGrid}
+            connectionLineType={ConnectionLineType.Step}
+            defaultEdgeOptions={{ type: 'cableEdge', animated: false }}
+            minZoom={0.1}
+            maxZoom={4}
+          >
+            {gridSettings.visible && (
+              <div style={{ opacity: gridSettings.opacity ?? 0.5 }}>
+                <Background variant={gridSettings.variant} gap={gridSettings.gap} color={gridSettings.color || '#cbd5e1'} />
+              </div>
+            )}
+            <Controls />
+            <MiniMap />
+
+            {printSettings.visible && (
               <div
                 style={{
                   position: 'absolute',
-                  bottom: 4,
-                  right: 8,
-                  fontSize: 12,
-                  color: '#ef4444',
-                  background: 'var(--bg-panel)',
-                  padding: '2px 6px',
-                  borderRadius: 4,
-                  opacity: 0.8,
-                  pointerEvents: 'none',
+                  left: framePosition.x - frameSize.width / 2,
+                  top: framePosition.y - frameSize.height / 2,
+                  width: frameSize.width,
+                  height: frameSize.height,
+                  border: '2px dashed #ef4444',
+                  backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                  pointerEvents: printSettings.draggable ? 'all' : 'none',
+                  cursor: printSettings.draggable ? 'move' : 'default',
+                  zIndex: 5,
+                }}
+                onMouseDown={(e) => {
+                  if (!printSettings.draggable) return;
+                  e.stopPropagation();
+                  setIsDraggingFrame(true);
                 }}
               >
-                {printSettings.format.toUpperCase()} {printSettings.orientation === 'landscape' ? '🏞️' : '📄'}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 4,
+                    right: 8,
+                    fontSize: 12,
+                    color: '#ef4444',
+                    background: 'var(--bg-panel)',
+                    padding: '2px 6px',
+                    borderRadius: 4,
+                    opacity: 0.8,
+                    pointerEvents: 'none',
+                  }}
+                >
+                  {printSettings.format.toUpperCase()} {printSettings.orientation === 'landscape' ? '🏞️' : '📄'}
+                </div>
+              </div>
+            )}
+          </ReactFlow>
+
+          <div className="flow-statusbar" style={{ minHeight: 48, height: 'auto', padding: '8px 16px', gap: 12 }}>
+            <div className="status-left" style={{ gap: 16 }}>
+              <span><i className="fas fa-microchip"></i> {nodes.length} устр.</span>
+              <span><i className="fas fa-plug"></i> {edges.length} каб.</span>
+              <span>⚡ {calculateStatistics().totalPower} Вт</span>
+              {selectedNodeSizeMm && <span>📐 {selectedNodeSizeMm}</span>}
+            </div>
+            <div className="status-center" style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="text"
+                  placeholder="Поиск устройства..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && performSearch()}
+                  style={{
+                    width: 200,
+                    padding: '4px 8px',
+                    fontSize: 11,
+                    border: '1px solid var(--border-light)',
+                    borderRadius: 6,
+                    background: 'var(--bg-panel)',
+                    color: 'var(--text-primary)',
+                  }}
+                />
+                <button onClick={performSearch} style={{ padding: '4px 8px', fontSize: 11, background: 'var(--accent)', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+                  <i className="fas fa-search"></i>
+                </button>
               </div>
             </div>
-          )}
-        </ReactFlow>
-
-        <div className="flow-statusbar" style={{ minHeight: 48, height: 'auto', padding: '8px 16px', gap: 12 }}>
-          <div className="status-left" style={{ gap: 16 }}>
-            <span><i className="fas fa-microchip"></i> {nodes.length} устр.</span>
-            <span><i className="fas fa-plug"></i> {edges.length} каб.</span>
-            <span>⚡ {calculateStatistics().totalPower} Вт</span>
-            {selectedNodeSizeMm && <span>📐 {selectedNodeSizeMm}</span>}
-          </div>
-          <div className="status-center" style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input
-                type="text"
-                placeholder="Поиск устройства..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && performSearch()}
-                style={{
-                  width: 200,
-                  padding: '4px 8px',
-                  fontSize: 11,
-                  border: '1px solid var(--border-light)',
-                  borderRadius: 6,
-                  background: 'var(--bg-panel)',
-                  color: 'var(--text-primary)',
-                }}
-              />
-              <button onClick={performSearch} style={{ padding: '4px 8px', fontSize: 11, background: 'var(--accent)', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
-                <i className="fas fa-search"></i>
-              </button>
+            <div className="status-right">
+              <span>📏 Масштаб: {Math.round((viewport?.zoom || 1) * 100)}%</span>
+              <span style={{ marginLeft: 16 }}>🔌 PoE: {calculateStatistics().poeConsumed} / {calculateStatistics().poeProvided} Вт</span>
             </div>
           </div>
-          <div className="status-right">
-            <span>📏 Масштаб: {Math.round((viewport?.zoom || 1) * 100)}%</span>
-            <span style={{ marginLeft: 16 }}>🔌 PoE: {calculateStatistics().poeConsumed} / {calculateStatistics().poeProvided} Вт</span>
-          </div>
         </div>
+
+        {contextMenu.visible && (
+          <div style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, background: 'var(--bg-panel)', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '4px 0', zIndex: 1000, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+            <div onClick={() => handleContextMenuAction('edit')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="fas fa-edit" style={{ width: 16 }}></i> Редактировать
+            </div>
+            <div onClick={() => handleContextMenuAction('duplicate')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="fas fa-copy" style={{ width: 16 }}></i> Дублировать
+            </div>
+            <div onClick={() => handleContextMenuAction('delete')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="fas fa-trash" style={{ width: 16 }}></i> Удалить
+            </div>
+          </div>
+        )}
+
+        {edgeContextMenu.visible && (
+          <div style={{ position: 'fixed', top: edgeContextMenu.y, left: edgeContextMenu.x, background: 'var(--bg-panel)', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '4px 0', zIndex: 1000, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+            <div style={{ padding: '6px 16px', fontSize: 11, color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-light)' }}>Действия с кабелем</div>
+            <div onClick={() => handleEdgeContextMenuAction('toggleMainBadge')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="fas fa-eye-slash" style={{ width: 16 }}></i> Скрыть тип кабеля
+            </div>
+            <div onClick={() => handleEdgeContextMenuAction('toggleMarkers')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="fas fa-tags" style={{ width: 16 }}></i> Скрыть маркировки
+            </div>
+            <div style={{ borderTop: '1px solid var(--border-light)', margin: '4px 0' }}></div>
+            <div style={{ padding: '6px 16px', fontSize: 11, color: 'var(--text-secondary)' }}>Применить стиль:</div>
+            <div onClick={() => handleEdgeContextMenuAction('applyToNodeSource')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="fas fa-arrow-right-to-bracket" style={{ width: 16 }}></i> Ко всем кабелям источника
+            </div>
+            <div onClick={() => handleEdgeContextMenuAction('applyToNodeTarget')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="fas fa-arrow-left-to-bracket" style={{ width: 16 }}></i> Ко всем кабелям приёмника
+            </div>
+            <div onClick={() => handleEdgeContextMenuAction('applyToSameType')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="fas fa-tag" style={{ width: 16 }}></i> Ко всем кабелям такого же типа
+            </div>
+            <div style={{ borderTop: '1px solid var(--border-light)', margin: '4px 0' }}></div>
+            <div onClick={() => handleEdgeContextMenuAction('openSidebar')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="fas fa-sliders-h" style={{ width: 16 }}></i> Настроить в сайдбаре
+            </div>
+          </div>
+        )}
+
+        <EditNodeModal
+          isOpen={showModal}
+          node={editingNode}
+          onClose={() => setShowModal(false)}
+          onSave={(updatedData) => {
+            if (editingNode) {
+              setNodes(nds => nds.map(n => n.id === editingNode.id ? { ...n, data: { ...n.data, ...updatedData } } : n));
+              setShowModal(false);
+            }
+          }}
+        />
+
+        {showStatsModal && (
+          <div className="modal-overlay" onClick={() => setShowStatsModal(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--bg-panel)', padding: 20, borderRadius: 16, width: 350, color: 'var(--text-primary)' }}>
+              <h3>Статистика схемы</h3>
+              <div style={{ marginTop: 16 }}>
+                <p>Устройств: {nodes.length}</p>
+                <p>Кабелей: {edges.length}</p>
+                <p>Общая мощность: {calculateStatistics().totalPower} Вт</p>
+                <p>PoE предоставлено: {calculateStatistics().poeProvided} Вт</p>
+                <p>PoE потреблено: {calculateStatistics().poeConsumed} Вт</p>
+              </div>
+              <button onClick={() => setShowStatsModal(false)} style={{ marginTop: 16, padding: '6px 16px', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Закрыть</button>
+            </div>
+          </div>
+        )}
       </div>
-
-      {contextMenu.visible && (
-        <div style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, background: 'var(--bg-panel)', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '4px 0', zIndex: 1000, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-          <div onClick={() => handleContextMenuAction('edit')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fas fa-edit" style={{ width: 16 }}></i> Редактировать
-          </div>
-          <div onClick={() => handleContextMenuAction('duplicate')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fas fa-copy" style={{ width: 16 }}></i> Дублировать
-          </div>
-          <div onClick={() => handleContextMenuAction('delete')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fas fa-trash" style={{ width: 16 }}></i> Удалить
-          </div>
-        </div>
-      )}
-
-      {edgeContextMenu.visible && (
-        <div style={{ position: 'fixed', top: edgeContextMenu.y, left: edgeContextMenu.x, background: 'var(--bg-panel)', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '4px 0', zIndex: 1000, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-          <div style={{ padding: '6px 16px', fontSize: 11, color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-light)' }}>Действия с кабелем</div>
-          <div onClick={() => handleEdgeContextMenuAction('toggleMainBadge')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fas fa-eye-slash" style={{ width: 16 }}></i> Скрыть тип кабеля
-          </div>
-          <div onClick={() => handleEdgeContextMenuAction('toggleMarkers')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fas fa-tags" style={{ width: 16 }}></i> Скрыть маркировки
-          </div>
-          <div style={{ borderTop: '1px solid var(--border-light)', margin: '4px 0' }}></div>
-          <div style={{ padding: '6px 16px', fontSize: 11, color: 'var(--text-secondary)' }}>Применить стиль:</div>
-          <div onClick={() => handleEdgeContextMenuAction('applyToNodeSource')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fas fa-arrow-right-to-bracket" style={{ width: 16 }}></i> Ко всем кабелям источника
-          </div>
-          <div onClick={() => handleEdgeContextMenuAction('applyToNodeTarget')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fas fa-arrow-left-to-bracket" style={{ width: 16 }}></i> Ко всем кабелям приёмника
-          </div>
-          <div onClick={() => handleEdgeContextMenuAction('applyToSameType')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fas fa-tag" style={{ width: 16 }}></i> Ко всем кабелям такого же типа
-          </div>
-          <div style={{ borderTop: '1px solid var(--border-light)', margin: '4px 0' }}></div>
-          <div onClick={() => handleEdgeContextMenuAction('openSidebar')} style={{ padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fas fa-sliders-h" style={{ width: 16 }}></i> Настроить в сайдбаре
-          </div>
-        </div>
-      )}
-
-      <EditNodeModal
-        isOpen={showModal}
-        node={editingNode}
-        onClose={() => setShowModal(false)}
-        onSave={(updatedData) => {
-          if (editingNode) {
-            setNodes(nds => nds.map(n => n.id === editingNode.id ? { ...n, data: { ...n.data, ...updatedData } } : n));
-            setShowModal(false);
-          }
-        }}
-      />
-
-      {showStatsModal && (
-        <div className="modal-overlay" onClick={() => setShowStatsModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--bg-panel)', padding: 20, borderRadius: 16, width: 350, color: 'var(--text-primary)' }}>
-            <h3>Статистика схемы</h3>
-            <div style={{ marginTop: 16 }}>
-              <p>Устройств: {nodes.length}</p>
-              <p>Кабелей: {edges.length}</p>
-              <p>Общая мощность: {calculateStatistics().totalPower} Вт</p>
-              <p>PoE предоставлено: {calculateStatistics().poeProvided} Вт</p>
-              <p>PoE потреблено: {calculateStatistics().poeConsumed} Вт</p>
-            </div>
-            <button onClick={() => setShowStatsModal(false)} style={{ marginTop: 16, padding: '6px 16px', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Закрыть</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
-export default FlowEditor;
+export default FlowEditorPage;
