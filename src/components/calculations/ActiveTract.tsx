@@ -1,0 +1,226 @@
+// src/components/calculations/ActiveTract.tsx
+import React, { useState, useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '../../hooks';
+import {
+  updateTract,
+  deleteTract,
+  setActiveTract,
+  setViewMode,
+  addDeviceToTract,
+  updateDeviceThunk,
+  recalcTractThunk,
+  removeDeviceThunk,
+  TractDevice,
+} from '../../store/tractsSlice';
+import { AddDeviceModal } from './AddDeviceModal';
+import { DeviceCard } from './DeviceCard';
+import { DeviceEditModal } from './DeviceEditModal';
+
+interface ActiveTractProps {
+  onBack: () => void;
+  onSelectCalculator: (id: string) => void;
+}
+
+export const ActiveTract: React.FC<ActiveTractProps> = ({ onBack, onSelectCalculator }) => {
+  const dispatch = useAppDispatch();
+  const tracts = useAppSelector(state => state.tracts.tracts);
+  const activeTractId = useAppSelector(state => state.tracts.activeTractId);
+  const videoSettings = useAppSelector(state => state.video);
+  const networkSettings = useAppSelector(state => state.network);
+  const activeTract = tracts.find(t => t.id === activeTractId) || null;
+  const [showModal, setShowModal] = useState(false);
+  const [modalColumn, setModalColumn] = useState<'source' | 'matrix' | 'sink'>('source');
+  const [selectedDevice, setSelectedDevice] = useState<TractDevice | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  useEffect(() => {
+    if (activeTract) {
+      dispatch(recalcTractThunk(activeTract.id));
+    }
+  }, [videoSettings, networkSettings, activeTract?.id, dispatch]);
+
+  const handleAddDevice = (device: any, column: 'source' | 'matrix' | 'sink') => {
+    if (!activeTract) return;
+    const newDevice: TractDevice = {
+      id: Date.now().toString(),
+      type: device.type,
+      modelName: device.name,
+      latency: device.latency || 0,
+      poe: device.poe || false,
+      poeEnabled: false,
+      poePower: 0,
+      powerW: device.powerW || 0,
+      shortName: '',
+      ethernet: false,
+      bitrateFactor: device.bitrateFactor,
+      hasNetwork: device.hasNetwork !== undefined ? device.hasNetwork : true,
+      shortPrefix: device.shortPrefix,
+      usb: false,
+      usbVersion: undefined,
+      expanded: true,
+      ports: device.ports,
+      poeBudget: device.poeBudget,
+      switchingLatency: device.switchingLatency,
+      inputs: device.inputs,
+      outputs: device.outputs,
+      latencyIn: device.latencyIn,
+      latencyOut: device.latencyOut,
+      speed: device.speed,
+    };
+    dispatch(addDeviceToTract({ tractId: activeTract.id, device: newDevice, column }));
+    setShowModal(false);
+  };
+
+  const handleDeleteDevice = (deviceId: string, column: 'source' | 'matrix' | 'sink') => {
+    if (!activeTract) return;
+    dispatch(removeDeviceThunk({ tractId: activeTract.id, deviceId, column }));
+  };
+
+  const handleToggleExpand = (deviceId: string) => {
+    if (!activeTract) return;
+    const device = [...activeTract.sourceDevices, ...activeTract.matrixDevices, ...activeTract.sinkDevices].find(d => d.id === deviceId);
+    if (device) {
+      dispatch(updateDeviceThunk({ tractId: activeTract.id, deviceId, updates: { expanded: !device.expanded } }));
+    }
+  };
+
+  const handleRename = (newName: string) => {
+    if (!activeTract) return;
+    dispatch(updateTract({ ...activeTract, name: newName }));
+  };
+
+  if (!activeTract) {
+    return (
+      <div className="empty-calculations">
+        <i className="fas fa-road"></i>
+        <h3>Нет активного тракта</h3>
+        <p>Выберите существующий тракт в сайдбаре или создайте новый.</p>
+        <button className="btn-primary" onClick={onBack}>К списку трактов</button>
+      </div>
+    );
+  }
+
+  const frames = activeTract.totalLatency / (1000 / videoSettings.fps);
+
+  return (
+    <div className="active-tract-container">
+      <div className="tract-header">
+        <button className="btn-secondary" onClick={onBack}>
+          <i className="fas fa-arrow-left"></i> Все тракты
+        </button>
+        <div className="tract-name">
+          <input
+            type="text"
+            value={activeTract.name}
+            onChange={e => handleRename(e.target.value)}
+            className="tract-name-input"
+          />
+        </div>
+        <div className="tract-stats-summary">
+          <div className="stat-badge">⏱️ {activeTract.totalLatency.toFixed(2)} мс</div>
+          <div className="stat-badge">🎬 {frames.toFixed(2)} кадр.</div>
+          <div className="stat-badge">📡 {activeTract.totalBitrate} Мбит/с</div>
+          <div className="stat-badge">💡 {activeTract.totalPower} Вт</div>
+        </div>
+        <div className="tract-actions">
+          <button className="btn-danger" onClick={() => {
+            if (confirm('Удалить тракт?')) {
+              dispatch(deleteTract(activeTract.id));
+              dispatch(setActiveTract(null));
+              onBack();
+            }
+          }}>
+            <i className="fas fa-trash-alt"></i> Удалить тракт
+          </button>
+        </div>
+      </div>
+
+      <div className="tract-columns">
+        <div className="tract-column">
+          <div className="column-header">
+            <span>📡 Начало тракта</span>
+            <button className="btn-icon" onClick={() => onSelectCalculator('video')}>
+              <i className="fas fa-calculator"></i>
+            </button>
+          </div>
+          <div className="devices-list">
+            {activeTract.sourceDevices.map(device => (
+              <DeviceCard
+                key={device.id}
+                device={device}
+                onClick={() => { setSelectedDevice(device); setShowEditModal(true); }}
+                onDelete={(e) => { e.stopPropagation(); handleDeleteDevice(device.id, 'source'); }}
+                onToggleExpand={(e) => { e.stopPropagation(); handleToggleExpand(device.id); }}
+              />
+            ))}
+          </div>
+          <button className="add-btn" onClick={() => { setModalColumn('source'); setShowModal(true); }}>
+            + Добавить устройство
+          </button>
+        </div>
+
+        <div className="tract-column">
+          <div className="column-header">
+            <span>🔄 Коммутация</span>
+            <button className="btn-icon" onClick={() => onSelectCalculator('network')}>
+              <i className="fas fa-calculator"></i>
+            </button>
+          </div>
+          <div className="devices-list">
+            {activeTract.matrixDevices.map(device => (
+              <DeviceCard
+                key={device.id}
+                device={device}
+                onClick={() => { setSelectedDevice(device); setShowEditModal(true); }}
+                onDelete={(e) => { e.stopPropagation(); handleDeleteDevice(device.id, 'matrix'); }}
+                onToggleExpand={(e) => { e.stopPropagation(); handleToggleExpand(device.id); }}
+              />
+            ))}
+          </div>
+          <button className="add-btn" onClick={() => { setModalColumn('matrix'); setShowModal(true); }}>
+            + Добавить коммутатор/матрицу
+          </button>
+        </div>
+
+        <div className="tract-column">
+          <div className="column-header">
+            <span>🖥️ Конец тракта</span>
+            <button className="btn-icon" onClick={() => onSelectCalculator('video')}>
+              <i className="fas fa-calculator"></i>
+            </button>
+          </div>
+          <div className="devices-list">
+            {activeTract.sinkDevices.map(device => (
+              <DeviceCard
+                key={device.id}
+                device={device}
+                onClick={() => { setSelectedDevice(device); setShowEditModal(true); }}
+                onDelete={(e) => { e.stopPropagation(); handleDeleteDevice(device.id, 'sink'); }}
+                onToggleExpand={(e) => { e.stopPropagation(); handleToggleExpand(device.id); }}
+              />
+            ))}
+          </div>
+          <button className="add-btn" onClick={() => { setModalColumn('sink'); setShowModal(true); }}>
+            + Добавить устройство
+          </button>
+        </div>
+      </div>
+
+      <AddDeviceModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onAdd={(device) => handleAddDevice(device, modalColumn)}
+        column={modalColumn}
+      />
+
+      {selectedDevice && (
+        <DeviceEditModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          device={selectedDevice}
+          tractId={activeTract.id}
+        />
+      )}
+    </div>
+  );
+};
