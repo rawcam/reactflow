@@ -61,7 +61,7 @@ const calcBitrateFromVideo = (video: any): number => {
   const chromaFactor = { '444': 3, '422': 2, '420': 1.5 }[video.chroma] || 2;
   const colorFactor = video.colorSpace === 'RGB' ? 3 : 2;
   const bitDepthFactor = (video.bitDepth || 8) / 8;
-  return (pixels * video.fps * chromaFactor * colorDepthFactor * bitDepthFactor) / 1_000_000;
+  return Math.round((pixels * video.fps * chromaFactor * colorFactor * bitDepthFactor) / 1_000_000);
 };
 
 // Пересчёт тракта
