@@ -1,4 +1,5 @@
 // src/types/flowTypes.ts
+
 export interface DeviceInterface {
   id: string;
   name: string;
