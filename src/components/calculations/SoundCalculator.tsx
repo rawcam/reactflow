@@ -67,6 +67,8 @@ export const SoundCalculator: React.FC<{ onBack: () => void }> = ({ onBack }) =>
       type: 'soundDevice',
       modelName: `Акустическая система (${result.text})`,
       latency: 0,
+      poe: false,
+      poePower: 0,
       poeEnabled: false,
       powerW: 0,
       shortName: `SPK${Math.floor(Math.random() * 1000)}`,
