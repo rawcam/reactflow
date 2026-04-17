@@ -35,7 +35,6 @@ import './FlowEditorPage.css';
 const nodeTypes: NodeTypes = { deviceNode: DeviceNode };
 const edgeTypes: EdgeTypes = { cableEdge: CableEdge };
 
-// --- Вспомогательные функции (без изменений) ---
 const createDemoInterfaces = (): { inputs: DeviceInterface[]; outputs: DeviceInterface[] } => {
   const inputId = (name: string) => `in-${Date.now()}-${name}`;
   const outputId = (name: string) => `out-${Date.now()}-${name}`;
@@ -167,31 +166,14 @@ const generateNextMark = (edges: Edge<CableEdgeData>[], prefix: string): string 
   return `${formattedPrefix} ${nextNum.toString().padStart(2, '0')}`;
 };
 
-// --- Компонент FlowEditor ---
 const FlowEditor: React.FC = () => {
-  // 🔥 UNDO/REDO: оборачиваем состояние узлов и рёбер
-  const {
-    state: undoableNodes,
-    setState: setUndoableNodes,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-  } = useUndoable<Node<DeviceNodeData>[]>([]);
-  const {
-    state: undoableEdges,
-    setState: setUndoableEdges,
-    undo: undoEdges,
-    redo: redoEdges,
-    canUndo: canUndoEdges,
-    canRedo: canRedoEdges,
-  } = useUndoable<Edge<CableEdgeData>[]>([]);
+  // 🔥 UNDO/REDO: правильное использование кортежа
+  const [undoableNodes, setUndoableNodes, undoNodes, redoNodes, canUndoNodes, canRedoNodes] = useUndoable<Node<DeviceNodeData>[]>([]);
+  const [undoableEdges, setUndoableEdges, undoEdges, redoEdges, canUndoEdges, canRedoEdges] = useUndoable<Edge<CableEdgeData>[]>([]);
 
-  // Синхронизируем с React Flow
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<DeviceNodeData>>(undoableNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge<CableEdgeData>>(undoableEdges);
 
-  // При изменении nodes/edges обновляем undoable состояние (но не при программной установке)
   useEffect(() => {
     setUndoableNodes(nodes);
   }, [nodes, setUndoableNodes]);
@@ -246,7 +228,6 @@ const FlowEditor: React.FC = () => {
   const autoSaveTimer = useRef<number>();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 🔍 ПОИСК
   const [searchQuery, setSearchQuery] = useState('');
 
   const { schemas, currentSchemaId, schemaName, setSchemaName, saveCurrentSchema, loadSchema, newSchema, importSchema } = useFlowSchemas();
@@ -426,7 +407,6 @@ const FlowEditor: React.FC = () => {
     setNodes(nds => [...nds, newNode]);
   };
 
-  // 🆕 U-01: начальные порты именуются по правилам
   const addNewNode = () => {
     const newId = Date.now().toString();
     const newNode: Node<DeviceNodeData> = {
@@ -561,21 +541,19 @@ const FlowEditor: React.FC = () => {
     closeContextMenu();
   };
 
-  // 🔥 ГОРЯЧИЕ КЛАВИШИ (включая Ctrl+Z / Ctrl+Y)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeEl = document.activeElement;
       const isInput = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.getAttribute('contenteditable') === 'true');
       if (isInput) return;
 
-      // Undo / Redo
       if (e.ctrlKey && !e.shiftKey && e.key === 'z') {
         e.preventDefault();
-        if (canUndo) { undo(); undoEdges(); }
+        if (canUndoNodes) { undoNodes(); undoEdges(); }
       }
       if (e.ctrlKey && e.key === 'y') {
         e.preventDefault();
-        if (canRedo) { redo(); redoEdges(); }
+        if (canRedoNodes) { redoNodes(); redoEdges(); }
       }
 
       if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
@@ -631,7 +609,7 @@ const FlowEditor: React.FC = () => {
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNode, copiedNode, setNodes, setEdges, selectedEdge, canUndo, canRedo, undo, undoEdges, redo, redoEdges]);
+  }, [selectedNode, copiedNode, setNodes, setEdges, selectedEdge, canUndoNodes, canRedoNodes, undoNodes, undoEdges, redoNodes, redoEdges]);
 
   useEffect(() => {
     document.addEventListener('click', closeContextMenu);
@@ -659,7 +637,6 @@ const FlowEditor: React.FC = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [nodes, edges]);
 
-  // Перетаскивание рамки
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDraggingFrame || !printSettings.draggable) return;
@@ -956,7 +933,6 @@ const FlowEditor: React.FC = () => {
   const handleToggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
   const handleToggleSidebar = () => setSidebarCollapsed(prev => !prev);
 
-  // 🔍 Функция поиска и центрирования
   const performSearch = () => {
     if (!searchQuery.trim()) return;
     const lowerQuery = searchQuery.toLowerCase();
@@ -987,7 +963,6 @@ const FlowEditor: React.FC = () => {
   };
   const frameSize = getFrameSize();
 
-  // Размер выделенной ноды в мм
   const selectedNodeSizeMm = selectedNode
     ? `${pxToMm(selectedNode.width || 90).toFixed(1)} × ${pxToMm(selectedNode.height || 100).toFixed(1)} мм`
     : null;
@@ -1104,7 +1079,6 @@ const FlowEditor: React.FC = () => {
           )}
         </ReactFlow>
 
-        {/* СТАТУСБАР С ПОИСКОМ И РАЗМЕРОМ НОДЫ */}
         <div className="flow-statusbar" style={{ minHeight: 48, height: 'auto', padding: '8px 16px', gap: 12 }}>
           <div className="status-left" style={{ gap: 16 }}>
             <span><i className="fas fa-microchip"></i> {nodes.length} устр.</span>
