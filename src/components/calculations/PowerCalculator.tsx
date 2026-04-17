@@ -32,6 +32,8 @@ export const PowerCalculator: React.FC<{ onBack: () => void }> = ({ onBack }) =>
       type: 'powerDevice',
       modelName: `ИБП ${Math.round(totalPower * upsAutonomy * 1.2)} ВА`,
       latency: 0,
+      poe: false,
+      poePower: 0,
       poeEnabled: false,
       powerW: 0,
       shortName: `UPS${Math.floor(Math.random() * 1000)}`,
