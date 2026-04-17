@@ -167,9 +167,11 @@ const generateNextMark = (edges: Edge<CableEdgeData>[], prefix: string): string 
 };
 
 const FlowEditor: React.FC = () => {
-  // 🔥 UNDO/REDO: правильное использование кортежа
-  const [undoableNodes, setUndoableNodes, undoNodes, redoNodes, canUndoNodes, canRedoNodes] = useUndoable<Node<DeviceNodeData>[]>([]);
-  const [undoableEdges, setUndoableEdges, undoEdges, redoEdges, canUndoEdges, canRedoEdges] = useUndoable<Edge<CableEdgeData>[]>([]);
+  // 🔥 Правильное использование useUndoable (кортеж из 3 элементов)
+  const [undoableNodes, setUndoableNodes, nodeUndoAPI] = useUndoable<Node<DeviceNodeData>[]>([]);
+  const { undo: undoNodes, redo: redoNodes, canUndo: canUndoNodes, canRedo: canRedoNodes } = nodeUndoAPI;
+  const [undoableEdges, setUndoableEdges, edgeUndoAPI] = useUndoable<Edge<CableEdgeData>[]>([]);
+  const { undo: undoEdges, redo: redoEdges, canUndo: canUndoEdges, canRedo: canRedoEdges } = edgeUndoAPI;
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<DeviceNodeData>>(undoableNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge<CableEdgeData>>(undoableEdges);
