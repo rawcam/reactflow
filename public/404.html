@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Перенаправление...</title>
+  <script type="text/javascript">
+    (function(location) {
+      // Убираем базовый путь /reactflow из pathname
+      var basePath = '/reactflow';
+      var path = location.pathname.replace(basePath, '');
+      
+      // Если путь пустой, то это корень
+      if (path === '' || path === '/') {
+        window.location.href = location.origin + basePath + '/';
+        return;
+      }
+      
+      // Формируем новый URL с хешем
+      var newUrl = location.origin + basePath + '/#' + path + location.search + location.hash;
+      window.location.href = newUrl;
+    })(window.location);
+  </script>
+</head>
+<body>
+  <p>Перенаправление в приложение...</p>
+</body>
+</html>
