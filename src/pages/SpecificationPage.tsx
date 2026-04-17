@@ -76,7 +76,7 @@ export const SpecificationPage: React.FC = () => {
     setRows(currentSpec.rows as unknown as Row[]); // ← исправлено приведение
     setTableName(currentSpec.name);
     setSelectedProjectId(currentSpec.projectId);
-    const maxId = currentSpec.rows.reduce((max, row) => Math.max(max, row.id), 0);
+    const maxId = currentSpec.rows.reduce((max, row) => Math.max(max, Number(row.id)), 0);
     setNextId(maxId + 1);
   } else if (id === undefined) {
     resetDemo();
