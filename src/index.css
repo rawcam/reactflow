@@ -1,387 +1,61 @@
-/* src/index.css */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+// src/components/calculations/TractList.tsx
+import React from 'react';
+import { Tract } from '../../store/tractsSlice';
+
+interface TractListProps {
+  tracts: Tract[];
+  activeTractId: string | null;
+  newTractName: string;
+  onNewTractNameChange: (value: string) => void;
+  onCreateTract: () => void;
+  onSelectTract: (id: string) => void;
 }
 
-body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: var(--bg-page);
-  color: var(--text-primary);
-  transition: background 0.2s, color 0.2s;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* ----- ПЕРЕМЕННЫЕ (из variables.css + наши) ----- */
-:root {
-  --bg-page: #f4f7fb;
-  --bg-panel: #ffffff;
-  --bg-panel-solid: #ffffff;
-  --text-primary: #1e2b3c;
-  --text-secondary: #4a5a6e;
-  --text-muted: #6c7e97;
-  --border-light: #d9e1ec;
-  --accent: #2563eb;
-  --accent-glow: rgba(37, 99, 235, 0.3);
-  --accent-hover: #1d4ed8;
-  --card-bg: #f9fcff;
-  --shadow: 0 8px 20px -8px rgba(0, 20, 40, 0.15);
-  --shadow-hover: 0 30px 45px -15px rgba(0, 0, 0, 0.15);
-  --danger: #dc2626;
-  --sidebar-width: 300px;
-  --sidebar-collapsed-width: 70px;
-  --transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-  --border-radius-card: 32px;
-  --border-radius-element: 24px;
-  --border-radius-small: 16px;
-  --dashboard-gap: 20px;
-  --dashboard-widget-radius: 20px;
-  --dashboard-widget-padding: 14px 18px 18px 18px;
-  --dashboard-font-size: 0.85rem;
-  --dashboard-text-hover: var(--accent);
-  --dashboard-text-hover-weight: 600;
-}
-
-body.dark {
-  --bg-page: #121212;
-  --bg-panel: #1e1e1e;
-  --bg-panel-solid: #1e293b;
-  --text-primary: #e0e0e0;
-  --text-secondary: #a0a0a0;
-  --text-muted: #7f8ea3;
-  --border-light: #333333;
-  --accent: #3b82f6;
-  --accent-glow: rgba(59, 130, 246, 0.3);
-  --accent-hover: #2563eb;
-  --card-bg: #2a2a2a;
-  --shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.7);
-  --shadow-hover: 0 30px 45px -15px rgba(0, 0, 0, 0.4);
-  --dashboard-text-hover: var(--accent);
-}
-
-/* ----- ОБЩИЕ СТИЛИ ПРИЛОЖЕНИЯ ----- */
-.app {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.app-layout {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-.main-content {
-  flex: 1;
-  overflow: auto;
-  padding: 20px;
-  background: var(--bg-page);
-}
-
-/* ----- ТОПБАР (стили будут позже, пока заготовка) ----- */
-.topbar {
-  height: 60px;
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border-light);
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  box-shadow: var(--shadow);
-}
-
-/* ----- САЙДБАР (общие стили, специфичные для редактора уже есть) ----- */
-.sidebar {
-  width: 340px;
-  background: var(--bg-panel);
-  border-right: 1px solid var(--border-light);
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  overflow-y: auto;
-  color: var(--text-primary);
-  transition: width 0.2s;
-}
-
-.sidebar.collapsed {
-  width: 60px;
-}
-
-.sidebar-header {
-  padding: 16px;
-  border-bottom: 1px solid var(--border-light);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sidebar.collapsed .sidebar-header {
-  padding: 16px 8px;
-  justify-content: center;
-}
-
-.sidebar-header h2 {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  white-space: nowrap;
-}
-
-.sidebar.collapsed .sidebar-header h2 {
-  display: none;
-}
-
-.header-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.theme-switch,
-.collapse-btn {
-  cursor: pointer;
-  font-size: 1rem;
-  color: var(--text-secondary);
-  background: none;
-  border: none;
-  width: 24px;
-  text-align: center;
-}
-
-.theme-switch:hover,
-.collapse-btn:hover {
-  color: var(--accent);
-}
-
-.sidebar-section {
-  border-bottom: 1px solid var(--border-light);
-}
-
-.section-header {
-  padding: 10px 16px;
-  font-weight: 500;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: background 0.2s;
-}
-
-.sidebar.collapsed .section-header {
-  padding: 10px 0;
-  justify-content: center;
-}
-
-.section-header:hover {
-  background: rgba(59, 130, 246, 0.15) !important;
-}
-
-.section-header i:first-child {
-  margin-right: 8px;
-}
-
-.sidebar.collapsed .section-header i:first-child {
-  margin-right: 0;
-  font-size: 1.2rem;
-  color: var(--accent);
-}
-
-.sidebar.collapsed .section-header span {
-  display: none;
-}
-
-.section-header i:last-child {
-  transition: transform 0.2s;
-  font-size: 0.7rem;
-}
-
-.sidebar.collapsed .section-header i:last-child {
-  display: none;
-}
-
-.section-content {
-  padding: 14px 18px;
-}
-
-.section-content.collapsed {
-  display: none;
-}
-
-.sidebar.collapsed .section-content {
-  display: none;
-}
-
-.section-content label {
-  display: block;
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
-  margin-top: 10px;
-}
-
-.section-content input,
-.section-content select {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  font-size: 12px;
-  background: var(--bg-panel);
-  color: var(--text-primary);
-  transition: 0.2s;
-}
-
-.section-content input:focus,
-.section-content select:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-glow);
-}
-
-.sidebar-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.sidebar-actions button {
-  flex: 1 0 calc(50% - 4px);
-  padding: 6px 0;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-light);
-  border-radius: 40px;
-  font-size: 11px;
-  cursor: pointer;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  transition: 0.2s;
-}
-
-.sidebar-actions button:hover {
-  background: rgba(59, 130, 246, 0.15) !important;
-  border-color: var(--accent) !important;
-}
-
-/* ----- РЁБРА И НОДЫ REACT FLOW ----- */
-.react-flow__edge-path {
-  stroke: #2563eb;
-  stroke-width: 2;
-  animation: none !important;
-  marker-end: none !important;
-  marker-start: none !important;
-}
-
-.react-flow__edge.selected .react-flow__edge-path {
-  stroke: #ef4444 !important;
-}
-
-.react-flow__edge marker {
-  display: none !important;
-}
-
-.react-flow__handle {
-  width: 8px !important;
-  height: 1px !important;
-  min-width: 8px !important;
-  max-width: 8px !important;
-  min-height: 1px !important;
-  max-height: 1px !important;
-  border-radius: 0 !important;
-  border: none !important;
-  transform: translateY(-50%) !important;
-  z-index: 10 !important;
-}
-
-.react-flow__node {
-  overflow: visible !important;
-}
-
-.react-flow__handle.handle-hover-visible {
-  transition: box-shadow 0.1s;
-}
-.react-flow__handle.handle-hover-visible:hover {
-  box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.35) !important;
-  background: #3b82f6 !important;
-  z-index: 100;
-}
-
-/* ----- СТРОКА СОСТОЯНИЯ ----- */
-.flow-statusbar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  min-height: 48px;
-  height: auto;
-  padding: 8px 16px;
-  background: var(--bg-panel);
-  border-top: 1px solid var(--border-light);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--text-secondary);
-  z-index: 10;
-  pointer-events: none;
-}
-
-.flow-statusbar span {
-  pointer-events: auto;
-}
-
-.flow-statusbar .status-left,
-.flow-statusbar .status-center,
-.flow-statusbar .status-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-/* ----- МОДАЛЬНЫЕ ОКНА ----- */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
-}
-
-.modal-content {
-  background: var(--bg-panel);
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: var(--shadow);
-  color: var(--text-primary);
-  max-width: 90vw;
-  max-height: 90vh;
-  overflow: auto;
-}
-
-/* ----- ИКОНКИ В СВЁРНУТОМ САЙДБАРЕ ----- */
-.sidebar.collapsed .section-header i:first-child {
-  display: inline-block !important;
-  font-size: 1.4rem !important;
-  color: var(--accent) !important;
-  margin-right: 0 !important;
-}
-.sidebar.collapsed .section-header span,
-.sidebar.collapsed .section-header i:last-child {
-  display: none !important;
-}
+export const TractList: React.FC<TractListProps> = ({
+  tracts,
+  activeTractId,
+  newTractName,
+  onNewTractNameChange,
+  onCreateTract,
+  onSelectTract,
+}) => {
+  return (
+    <div className="tract-list">
+      <div className="tract-list-header">
+        <h3>Тракты</h3>
+        <div className="tract-create">
+          <input
+            type="text"
+            placeholder="Название тракта"
+            value={newTractName}
+            onChange={e => onNewTractNameChange(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && onCreateTract()}
+          />
+          <button className="btn-primary" onClick={onCreateTract}>
+            <i className="fas fa-plus"></i> Создать
+          </button>
+        </div>
+      </div>
+      <div className="tract-items">
+        {tracts.length === 0 ? (
+          <div className="tract-empty">Нет созданных трактов</div>
+        ) : (
+          tracts.map(tract => (
+            <div
+              key={tract.id}
+              className={`tract-item ${activeTractId === tract.id ? 'active' : ''}`}
+              onClick={() => onSelectTract(tract.id)}
+            >
+              <div className="tract-item-name">{tract.name}</div>
+              <div className="tract-item-stats">
+                <span>⏱️ {tract.totalLatency.toFixed(2)} мс</span>
+                <span>📡 {tract.totalBitrate} Мбит/с</span>
+                <span>💡 {tract.totalPower} Вт</span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
