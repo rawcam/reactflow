@@ -1,0 +1,84 @@
+/* src/styles/sidebar.css */
+/* Стили для аккордеонов в сайдбаре страницы расчётов */
+.sidebar-section {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.section-header {
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+  background: var(--bg-panel);
+}
+
+.section-header:hover {
+  background: var(--card-bg);
+}
+
+.section-header i {
+  transition: transform 0.2s;
+}
+
+.section-header .fa-angle-down.collapsed {
+  transform: rotate(-90deg);
+}
+
+.section-content {
+  padding: 16px 20px;
+  background: var(--card-bg);
+}
+
+.section-content-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Кнопки внутри аккордеонов */
+.mode-btn {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-light);
+  border-radius: 40px;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition);
+}
+
+.mode-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.manage-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.manage-buttons .mode-btn {
+  justify-content: center;
+}
+
+.manage-buttons .danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.manage-buttons .danger:hover {
+  background: var(--danger);
+  color: white;
+}
