@@ -81,3 +81,62 @@
 .flow-editor .sidebar.collapsed .section-header i:last-child {
   display: none !important;
 }
+/* Изоляция редактора схем */
+.flow-editor {
+  --sidebar-width: 340px;
+  font-size: 14px;
+}
+
+.flow-editor .sidebar {
+  width: 340px;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-light);
+}
+
+.flow-editor .sidebar.collapsed {
+  width: 60px;
+}
+
+.flow-editor .sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.flow-editor .sidebar-section {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.flow-editor .section-header {
+  padding: 10px 16px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.flow-editor .section-content {
+  padding: 14px 18px;
+}
+
+.flow-editor .react-flow__node {
+  font-size: 10px;
+}
+
+.flow-editor .react-flow__edge-path {
+  stroke-width: 2;
+}
+
+.flow-editor .react-flow__handle {
+  width: 8px !important;
+  height: 1px !important;
+}
+
+.flow-editor .flow-statusbar {
+  min-height: 48px;
+  padding: 8px 16px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-light);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
