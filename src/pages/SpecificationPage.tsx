@@ -73,7 +73,6 @@ export const SpecificationPage: React.FC = () => {
 
   useEffect(() => {
     if (currentSpec) {
-      // Исправлено: as unknown as Row[]
       setRows(currentSpec.rows as unknown as Row[]);
       setTableName(currentSpec.name);
       setSelectedProjectId(currentSpec.projectId);
