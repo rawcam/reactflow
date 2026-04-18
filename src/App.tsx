@@ -17,7 +17,6 @@ function App() {
   useEffect(() => {
     const userRole = localStorage.getItem('userRole');
     if (!userRole) {
-      // Если роль не сохранена — перенаправляем на страницу входа
       window.location.href = '/reactflow/login.html';
     }
   }, []);
