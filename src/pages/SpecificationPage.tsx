@@ -73,7 +73,8 @@ export const SpecificationPage: React.FC = () => {
 
   useEffect(() => {
     if (currentSpec) {
-      setRows(currentSpec.rows as Row[]);
+      // Исправлено: as unknown as Row[]
+      setRows(currentSpec.rows as unknown as Row[]);
       setTableName(currentSpec.name);
       setSelectedProjectId(currentSpec.projectId);
       const maxId = currentSpec.rows.reduce((max, row) => Math.max(max, Number(row.id)), 0);
