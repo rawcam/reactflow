@@ -16,24 +16,47 @@ interface WidgetsState {
   displayMode: DisplayMode;
 }
 
-const defaultVisible: WidgetId[] = ['companyFinance', 'projectsFinance', 'service', 'workload', 'risks', 'carousel'];
-
-const rolePresets: Record<string, WidgetId[]> = {
-  director: ['companyFinance', 'projectsFinance', 'risks', 'carousel'],
+const defaultVisibleForRole: Record<string, WidgetId[]> = {
+  director: ['companyFinance', 'projectsFinance', 'service', 'workload', 'risks', 'carousel'],
   pm: ['projectsFinance', 'service', 'workload', 'risks', 'carousel'],
   engineer: ['service', 'workload', 'carousel'],
   designer: ['carousel'],
-  logist: ['carousel'],
+  logist: ['service', 'carousel'],
 };
 
-const initialState: WidgetsState = {
-  visibleWidgets: defaultVisible,
-  displayMode: 'normal',
+const getRoleFromStorage = (): string => {
+  const role = localStorage.getItem('userRole');
+  if (role && ['director', 'pm', 'engineer', 'designer', 'logist'].includes(role)) {
+    return role;
+  }
+  return 'director';
+};
+
+const loadInitialState = (): WidgetsState => {
+  const savedVisible = localStorage.getItem('visibleWidgets');
+  const savedMode = localStorage.getItem('widgetsDisplayMode') as DisplayMode | null;
+
+  let visible: WidgetId[] = [];
+  if (savedVisible) {
+    try {
+      visible = JSON.parse(savedVisible);
+    } catch { /* ignore */ }
+  }
+  
+  if (!visible.length) {
+    const role = getRoleFromStorage();
+    visible = [...(defaultVisibleForRole[role] || defaultVisibleForRole.director)];
+  }
+
+  return {
+    visibleWidgets: visible,
+    displayMode: savedMode === 'compact' ? 'compact' : 'normal',
+  };
 };
 
 const widgetsSlice = createSlice({
   name: 'widgets',
-  initialState,
+  initialState: loadInitialState(),
   reducers: {
     toggleWidget: (state, action: PayloadAction<WidgetId>) => {
       const id = action.payload;
@@ -42,18 +65,24 @@ const widgetsSlice = createSlice({
       } else {
         state.visibleWidgets.push(id);
       }
-    },
-    setDisplayMode: (state, action: PayloadAction<DisplayMode>) => {
-      state.displayMode = action.payload;
-    },
-    resetToRolePreset: (state, action: PayloadAction<string>) => {
-      state.visibleWidgets = rolePresets[action.payload] || defaultVisible;
+      localStorage.setItem('visibleWidgets', JSON.stringify(state.visibleWidgets));
     },
     setVisibleWidgets: (state, action: PayloadAction<WidgetId[]>) => {
       state.visibleWidgets = action.payload;
+      localStorage.setItem('visibleWidgets', JSON.stringify(state.visibleWidgets));
+    },
+    setDisplayMode: (state, action: PayloadAction<DisplayMode>) => {
+      state.displayMode = action.payload;
+      localStorage.setItem('widgetsDisplayMode', action.payload);
+    },
+    resetToRolePreset: (state, action: PayloadAction<string>) => {
+      const role = action.payload;
+      const preset = defaultVisibleForRole[role] || [...defaultVisibleForRole.director];
+      state.visibleWidgets = preset;
+      localStorage.setItem('visibleWidgets', JSON.stringify(preset));
     },
   },
 });
 
-export const { toggleWidget, setDisplayMode, resetToRolePreset, setVisibleWidgets } = widgetsSlice.actions;
+export const { toggleWidget, setVisibleWidgets, setDisplayMode, resetToRolePreset } = widgetsSlice.actions;
 export default widgetsSlice.reducer;
