@@ -12,7 +12,7 @@ import './ProjectsPage.css';
 
 export const ProjectsPage = () => {
   const { hasRole } = useAuth();
-  const { loadProjects, addProject, initDemoData } = useProjectsDb();
+  const { loadProjects, addProjectToDb } = useProjectsDb();
   const projects = useSelector((state: RootState) => state.projects.list);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
@@ -28,16 +28,9 @@ export const ProjectsPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<'all' | 'priority' | 'normal'>('all');
 
-  const getProjectIdFromHash = () => {
-    const hash = window.location.hash;
-    const match = hash.match(/[?&]id=([^&]+)/);
-    return match ? match[1] : null;
-  };
-
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      await initDemoData();
       await loadProjects();
       setLoading(false);
     };
@@ -45,28 +38,12 @@ export const ProjectsPage = () => {
   }, []);
 
   useEffect(() => {
-    if (loading) return;
-    const projectId = getProjectIdFromHash();
+    const projectId = window.location.hash.match(/[?&]id=([^&]+)/)?.[1];
     if (projectId && projects.length > 0) {
       const project = projects.find(p => p.id === projectId);
       setSelectedProject(project || null);
     }
-  }, [projects, loading]);
-
-  useEffect(() => {
-    const handleHashChange = () => {
-      if (loading) return;
-      const projectId = getProjectIdFromHash();
-      if (projectId && projects.length > 0) {
-        const project = projects.find(p => p.id === projectId);
-        setSelectedProject(project || null);
-      } else {
-        setSelectedProject(null);
-      }
-    };
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [projects, loading]);
+  }, [projects]);
 
   useEffect(() => {
     localStorage.setItem('projectsViewMode', viewMode);
@@ -109,7 +86,7 @@ export const ProjectsPage = () => {
   };
 
   const handleCreate = async (projectData: any) => {
-    await addProject(projectData);
+    await addProjectToDb(projectData);
     setShowCreateModal(false);
   };
 
