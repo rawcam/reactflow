@@ -1,54 +1,102 @@
-/* Стили редактора */
-.add-node-btn {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
+/* src/pages/FlowEditorPage.css */
+.flow-editor {
+  --sidebar-width: 340px;
+  font-size: 14px;
+  background: var(--bg-page);
+}
+
+/* Сайдбар в редакторе */
+.flow-editor .sidebar {
+  width: 340px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(16px);
+  border-right: 1px solid var(--border-light);
+}
+
+.flow-editor .sidebar.collapsed {
+  width: 60px;
+}
+
+.flow-editor .sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.flow-editor .sidebar-section {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.flow-editor .section-header {
+  padding: 10px 16px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-secondary);
   cursor: pointer;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  transition: all 0.2s;
+  transition: var(--transition);
 }
-.add-node-btn:hover {
-  background: #e2e8f0;
-  border-color: #2563eb;
+
+.flow-editor .section-header:hover {
+  background: var(--accent-glow);
 }
-.settings-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 4px;
-  background: white;
-  border: 1px solid #cbd5e1;
+
+.flow-editor .section-content {
+  padding: 14px 18px;
+}
+
+/* Узлы и рёбра — сохраняем функциональность, меняем только фон */
+.flow-editor .react-flow__node {
+  font-size: 10px;
+}
+
+.flow-editor .react-flow__edge-path {
+  stroke-width: 2;
+}
+
+.flow-editor .react-flow__handle {
+  width: 8px !important;
+  height: 1px !important;
+}
+
+.flow-editor .flow-statusbar {
+  min-height: 48px;
+  padding: 8px 16px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-light);
+  font-size: 11px;
+  color: var(--text-secondary);
+  backdrop-filter: blur(12px);
+}
+
+/* Кнопки внутри редактора */
+.flow-editor .add-node-btn {
+  background: var(--card-bg);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
   border-radius: 8px;
-  padding: 12px;
-  min-width: 200px;
-  z-index: 100;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-.settings-menu label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 13px;
+
+.flow-editor .add-node-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
 }
-.settings-menu select,
-.settings-menu input {
-  width: 100%;
-  margin-top: 4px;
-  padding: 4px;
-  border-radius: 4px;
-  border: 1px solid #cbd5e1;
+
+/* Контекстное меню */
+.flow-editor .context-menu {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
 }
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+
+.flow-editor .context-menu-item {
+  padding: 8px 16px;
+  color: var(--text-primary);
+  transition: var(--transition);
+}
+
+.flow-editor .context-menu-item:hover {
+  background: var(--accent-glow);
 }
