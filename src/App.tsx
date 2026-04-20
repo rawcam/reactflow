@@ -1,11 +1,11 @@
 // src/App.tsx
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ReactFlowProvider } from '@xyflow/react';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { store, RootState } from './store';
 import { supabase } from './lib/supabaseClient';
-import { setSession, setRole, setLoading } from './store/authSlice';
+import { setSession, setRole } from './store/authSlice';
 import { Topbar } from './components/layout/Topbar';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProjectsPage } from './pages/ProjectsPage';
@@ -19,44 +19,38 @@ import './index.css';
 const AppContent = () => {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
-  const isLoading = useSelector((state: RootState) => state.auth.isLoading);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Проверяем текущую сессию при загрузке
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const initAuth = async () => {
+      // Получаем текущую сессию
+      const { data: { session } } = await supabase.auth.getSession();
       dispatch(setSession(session));
       if (session?.user) {
-        // Загружаем роль пользователя из таблицы user_roles
-        supabase
+        const { data, error } = await supabase
           .from('user_roles')
           .select('role')
           .eq('id', session.user.id)
-          .single()
-          .then(({ data, error }) => {
-            if (!error && data) {
-              dispatch(setRole(data.role));
-            }
-            dispatch(setLoading(false));
-          });
-      } else {
-        dispatch(setLoading(false));
+          .single();
+        if (!error && data) {
+          dispatch(setRole(data.role));
+        }
       }
-    });
+      setIsLoading(false);
+    };
 
-    // Подписываемся на изменения аутентификации
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    initAuth();
+
+    // Подписка на изменения
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       dispatch(setSession(session));
       if (session?.user) {
-        supabase
+        const { data } = await supabase
           .from('user_roles')
           .select('role')
           .eq('id', session.user.id)
-          .single()
-          .then(({ data, error }) => {
-            if (!error && data) {
-              dispatch(setRole(data.role));
-            }
-          });
+          .single();
+        if (data) dispatch(setRole(data.role));
       } else {
         dispatch(setRole(null));
       }
@@ -68,7 +62,14 @@ const AppContent = () => {
   }, [dispatch]);
 
   if (isLoading) {
-    return <div className="loading-screen">Загрузка...</div>;
+    return (
+      <div className="loading-screen" style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        height: '100vh', background: '#0a1120', color: 'white'
+      }}>
+        <h2>Загрузка...</h2>
+      </div>
+    );
   }
 
   return (
