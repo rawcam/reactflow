@@ -525,3 +525,14 @@ body.light .progress-bar {
 .list-detail-btn:hover {
   text-decoration: underline;
 }
+.project-status {
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  color: white;
+  text-transform: uppercase;
+  white-space: nowrap;      /* Запрещаем перенос */
+  height: 24px;             /* Фиксированная высота */
+  display: inline-flex;
+  align-items: center;
+}
