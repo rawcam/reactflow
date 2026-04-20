@@ -99,7 +99,7 @@ export const ProjectsPage = () => {
   if (loading) {
     return (
       <div className="projects-page">
-        <div className="dashboard-wrapper" style={{ textAlign: 'center', padding: '40px' }}>
+        <div className="empty-state">
           <i className="fas fa-spinner fa-pulse" style={{ fontSize: '2rem' }}></i>
           <p>Загрузка проектов...</p>
         </div>
@@ -113,67 +113,60 @@ export const ProjectsPage = () => {
 
   return (
     <div className="projects-page">
-      <div className="dashboard-wrapper">
-        <div className="projects-toolbar">
-          <div className="toolbar-left">
-            <div className="view-toggle">
-              <button
-                className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                onClick={() => setViewMode('grid')}
-              >
-                <i className="fas fa-th"></i> Сетка
-              </button>
-              <button
-                className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
-                onClick={() => setViewMode('list')}
-              >
-                <i className="fas fa-list"></i> Список
-              </button>
-            </div>
-            <div className="filter-group">
-              <label><i className="fas fa-sort"></i> Сортировка</label>
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)}>
-                <option value="name">По названию</option>
-                <option value="budget">По бюджету (убыв.)</option>
-                <option value="margin">По марже (убыв.)</option>
-                <option value="date">По дате начала (новые)</option>
-                <option value="progress">По прогрессу</option>
-              </select>
-            </div>
-            <div className="filter-group">
-              <label><i className="fas fa-filter"></i> Статус</label>
-              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                <option value="all">Все</option>
-                <option value="presale">Пресейл</option>
-                <option value="design">Проект</option>
-                <option value="ready">Готов</option>
-                <option value="construction">Стройка</option>
-                <option value="done">Завершён</option>
-              </select>
-            </div>
-            <div className="filter-group">
-              <label><i className="fas fa-star"></i> Приоритет</label>
-              <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value as any)}>
-                <option value="all">Все</option>
-                <option value="priority">Только срочные</option>
-                <option value="normal">Обычные</option>
-              </select>
-            </div>
-            <button className="reset-btn" onClick={resetFilters}>Сбросить</button>
-          </div>
-          {(hasRole('director') || hasRole('pm')) && (
-            <button className="btn-primary" onClick={() => setShowCreateModal(true)}>
-              <i className="fas fa-plus"></i> Новый проект
+      <div className="projects-toolbar">
+        <div className="toolbar-left">
+          <div className="view-toggle">
+            <button className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}>
+              <i className="fas fa-th"></i> Сетка
             </button>
-          )}
+            <button className={`view-btn ${viewMode === 'list' ? 'active' : ''}`} onClick={() => setViewMode('list')}>
+              <i className="fas fa-list"></i> Список
+            </button>
+          </div>
+          <div className="filter-group">
+            <label><i className="fas fa-sort"></i> Сортировка</label>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)}>
+              <option value="name">По названию</option>
+              <option value="budget">По бюджету (убыв.)</option>
+              <option value="margin">По марже (убыв.)</option>
+              <option value="date">По дате начала (новые)</option>
+              <option value="progress">По прогрессу</option>
+            </select>
+          </div>
+          <div className="filter-group">
+            <label><i className="fas fa-filter"></i> Статус</label>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option value="all">Все</option>
+              <option value="presale">Пресейл</option>
+              <option value="design">Проект</option>
+              <option value="ready">Готов</option>
+              <option value="construction">Стройка</option>
+              <option value="done">Завершён</option>
+            </select>
+          </div>
+          <div className="filter-group">
+            <label><i className="fas fa-star"></i> Приоритет</label>
+            <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value as any)}>
+              <option value="all">Все</option>
+              <option value="priority">Только срочные</option>
+              <option value="normal">Обычные</option>
+            </select>
+          </div>
+          <button className="reset-btn" onClick={resetFilters}>Сбросить</button>
         </div>
-
-        <ProjectList
-          projects={filteredAndSortedProjects}
-          onSelectProject={handleSelectProject}
-          viewMode={viewMode}
-        />
+        {(hasRole('director') || hasRole('pm')) && (
+          <button className="btn-primary" onClick={() => setShowCreateModal(true)}>
+            <i className="fas fa-plus"></i> Новый проект
+          </button>
+        )}
       </div>
+
+      <ProjectList
+        projects={filteredAndSortedProjects}
+        onSelectProject={handleSelectProject}
+        viewMode={viewMode}
+      />
+
       <CreateProjectModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
