@@ -8,7 +8,6 @@ import Sortable from 'sortablejs';
 import * as XLSX from 'xlsx';
 import './SpecificationPage.css';
 
-// Локальные типы – теперь полностью совместимы с SpecRow из слайса
 export interface DataRow {
   id: string;
   type: 'data';
@@ -60,6 +59,8 @@ export const SpecificationPage: React.FC = () => {
 
   const tableBodyRef = useRef<HTMLTableSectionElement>(null);
   const sortableRef = useRef<Sortable | null>(null);
+  const prevRowsRef = useRef<string>(''); // для предотвращения цикличного сохранения
+
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
     const saved = localStorage.getItem('spec_column_widths');
     return saved ? JSON.parse(saved) : {
@@ -72,29 +73,37 @@ export const SpecificationPage: React.FC = () => {
 
   const generateId = () => `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
-  // Загрузка спецификации – теперь типы совместимы
+  // Загрузка спецификации – только при первом входе или смене id
   useEffect(() => {
-    if (currentSpec) {
-      setRows(currentSpec.rows as Row[]);
-      setTableName(currentSpec.name);
-      setSelectedProjectId(currentSpec.projectId);
-    } else if (id === undefined) {
-      resetDemo();
-      setSelectedProjectId(null);
-      setTableName('');
-    } else {
-      navigate('/specifications');
+    if (!currentSpec) {
+      if (id === undefined) {
+        resetDemo();
+      } else {
+        navigate('/specifications');
+      }
+      return;
     }
+
+    // Если rows пуст – это первый вход, загружаем данные из Redux
+    if (rows.length === 0) {
+      setRows(currentSpec.rows as Row[]);
+    }
+    setTableName(currentSpec.name);
+    setSelectedProjectId(currentSpec.projectId);
   }, [currentSpec, id, navigate]);
 
-  // Автосохранение
+  // Автосохранение с защитой от циклов
   useEffect(() => {
-    if (currentSpec && rows.length > 0) {
-      dispatch(updateSpecification({
-        id: currentSpec.id,
-        updates: { rows }
-      }));
-    }
+    if (!currentSpec || rows.length === 0) return;
+
+    const rowsJSON = JSON.stringify(rows);
+    if (rowsJSON === prevRowsRef.current) return; // данные не изменились
+
+    prevRowsRef.current = rowsJSON;
+    dispatch(updateSpecification({
+      id: currentSpec.id,
+      updates: { rows }
+    }));
   }, [rows, currentSpec, dispatch]);
 
   useEffect(() => {
@@ -181,9 +190,6 @@ export const SpecificationPage: React.FC = () => {
       })
     );
   };
-  useEffect(() => {
-    updateCalculations();
-  }, []);
 
   const isDataRowVisible = (row: DataRow) => {
     const vendorMatch = filterVendor === '' || row.vendor.toLowerCase().includes(filterVendor.toLowerCase());
@@ -221,15 +227,33 @@ export const SpecificationPage: React.FC = () => {
       id: newId, type: 'data', vendor: '', sku: '', name: '', quantity: 0, unit: 'шт', currency: 'RUB',
       price: 0, discount: 0, discountAmount: 0, priceAfter: 0, supplier: '', status: 'Замена'
     };
-    const newRows = [...rows];
-    newRows.splice(index + 1, 0, newRow);
-    setRows(newRows);
-    setTimeout(() => updateCalculations(), 0);
+    setRows(prev => {
+      const newRows = [...prev];
+      newRows.splice(index + 1, 0, newRow);
+      return newRows.map(row => {
+        if (row.type === 'data') {
+          const discountAmount = (row.price * row.discount) / 100;
+          const priceAfter = row.price - discountAmount;
+          return { ...row, discountAmount, priceAfter };
+        }
+        return row;
+      });
+    });
   };
 
   const addSection = () => {
     const newId = generateId();
-    setRows([...rows, { id: newId, type: 'section', title: 'Новый раздел', collapsed: false }]);
+    setRows(prev => {
+      const newRows = [...prev, { id: newId, type: 'section' as const, title: 'Новый раздел', collapsed: false }];
+      return newRows.map(row => {
+        if (row.type === 'data') {
+          const discountAmount = (row.price * row.discount) / 100;
+          const priceAfter = row.price - discountAmount;
+          return { ...row, discountAmount, priceAfter };
+        }
+        return row;
+      });
+    });
   };
 
   const duplicateRow = (id: string) => {
@@ -238,10 +262,18 @@ export const SpecificationPage: React.FC = () => {
     const original = rows[index] as DataRow;
     const newId = generateId();
     const clone = { ...original, id: newId, name: original.name + ' (копия)' };
-    const newRows = [...rows];
-    newRows.splice(index + 1, 0, clone);
-    setRows(newRows);
-    setTimeout(() => updateCalculations(), 0);
+    setRows(prev => {
+      const newRows = [...prev];
+      newRows.splice(index + 1, 0, clone);
+      return newRows.map(row => {
+        if (row.type === 'data') {
+          const discountAmount = (row.price * row.discount) / 100;
+          const priceAfter = row.price - discountAmount;
+          return { ...row, discountAmount, priceAfter };
+        }
+        return row;
+      });
+    });
   };
 
   const deleteRow = (id: string) => {
