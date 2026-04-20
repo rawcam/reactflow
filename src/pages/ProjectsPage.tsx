@@ -8,7 +8,7 @@ import { ProjectDetail } from '../features/projects/ProjectDetail';
 import { CreateProjectModal } from '../components/projects/CreateProjectModal';
 import { useAuth } from '../hooks/useAuth';
 import { useProjectsDb } from '../hooks/useProjectsDb';
-import './ProjectsPage.css';
+
 
 export const ProjectsPage = () => {
   const { hasRole } = useAuth();
