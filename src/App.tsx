@@ -20,29 +20,43 @@ const AppContent = () => {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const initAuth = async () => {
-      // Получаем текущую сессию
-      const { data: { session } } = await supabase.auth.getSession();
-      dispatch(setSession(session));
-      if (session?.user) {
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-        if (!error && data) {
-          dispatch(setRole(data.role));
+      try {
+        console.log('Checking session...');
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        
+        dispatch(setSession(session));
+        if (session?.user) {
+          console.log('User found:', session.user.email);
+          const { data, error: roleError } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+          if (roleError) {
+            console.warn('Role fetch error:', roleError);
+            // Даже если роль не получена, считаем пользователя инженером по умолчанию
+            dispatch(setRole('engineer'));
+          } else if (data) {
+            dispatch(setRole(data.role));
+          }
         }
+      } catch (err: any) {
+        console.error('Auth init error:', err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     initAuth();
 
-    // Подписка на изменения
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log('Auth state changed:', _event);
       dispatch(setSession(session));
       if (session?.user) {
         const { data } = await supabase
@@ -51,6 +65,7 @@ const AppContent = () => {
           .eq('id', session.user.id)
           .single();
         if (data) dispatch(setRole(data.role));
+        else dispatch(setRole('engineer'));
       } else {
         dispatch(setRole(null));
       }
@@ -64,10 +79,11 @@ const AppContent = () => {
   if (isLoading) {
     return (
       <div className="loading-screen" style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         height: '100vh', background: '#0a1120', color: 'white'
       }}>
         <h2>Загрузка...</h2>
+        {error && <p style={{ color: '#f87171', marginTop: 16 }}>Ошибка: {error}</p>}
       </div>
     );
   }
