@@ -107,3 +107,7 @@
 .flow-editor .section-content {
   padding: 14px 18px;
 }
+/* Отключаем звёздный фон для редактора */
+.flow-editor::before {
+  display: none !important;
+}
