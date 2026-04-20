@@ -11,7 +11,7 @@ export const Topbar: React.FC = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const theme = useSelector((state: RootState) => state.theme.mode);
-  const userRole = useSelector((state: RootState) => state.auth.user?.role);
+  const userRole = useSelector((state: RootState) => state.auth.user?.role) || 'director';
 
   const navItems = [
     { path: '/dashboard', label: 'Главная' },
@@ -23,18 +23,12 @@ export const Topbar: React.FC = () => {
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'director':
-        return 'Директор';
-      case 'pm':
-        return 'ГИП';
-      case 'engineer':
-        return 'Инженер';
-      case 'designer':
-        return 'Проектировщик';
-      case 'logist':
-        return 'Логист';
-      default:
-        return role;
+      case 'director': return 'Директор';
+      case 'pm': return 'ГИП';
+      case 'engineer': return 'Инженер';
+      case 'designer': return 'Проектировщик';
+      case 'logist': return 'Логист';
+      default: return role;
     }
   };
 
@@ -47,7 +41,7 @@ export const Topbar: React.FC = () => {
         {navItems.map(item => (
           <button
             key={item.path}
-            className={location.pathname === item.path ? 'active' : ''}
+            className={`nav-btn ${location.pathname === item.path ? 'active' : ''}`}
             onClick={() => navigate(item.path)}
           >
             {item.label}
@@ -55,13 +49,16 @@ export const Topbar: React.FC = () => {
         ))}
       </div>
       <div className="topbar-actions">
-        <button onClick={() => dispatch(toggleTheme())}>
-          <i className={`fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
-        </button>
-        <button onClick={() => dispatch(openWidgetConfig())} className="widget-config-btn">
+        <button className="icon-btn" onClick={() => dispatch(openWidgetConfig())}>
           <i className="fas fa-sliders-h"></i>
         </button>
-        <span className="role-badge">{userRole ? getRoleLabel(userRole) : 'Директор'}</span>
+        <button className="icon-btn" onClick={() => dispatch(toggleTheme())}>
+          <i className={`fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
+        </button>
+        <span className="role-badge">
+          <i className="fas fa-user-circle" style={{ marginRight: 6 }}></i>
+          {getRoleLabel(userRole)}
+        </span>
       </div>
     </div>
   );
