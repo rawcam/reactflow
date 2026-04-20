@@ -1,4 +1,5 @@
 /* src/styles/theme-new.css */
+/* Базовые переменные (тёмная тема по умолчанию) */
 :root {
   --bg-page: radial-gradient(circle at 20% 30%, #0a1120, #03060b);
   --bg-panel: rgba(15, 25, 40, 0.45);
@@ -24,6 +25,7 @@
   --border-radius-small: 16px;
 }
 
+/* Светлая тема */
 body.light {
   --bg-page: radial-gradient(circle at 20% 30%, #e6f0ff, #d0e0ff);
   --bg-panel: rgba(255, 255, 255, 0.7);
@@ -40,7 +42,7 @@ body.light {
   --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.1);
 }
 
-/* Звёзды / точки на фоне */
+/* Звёздный фон (только для body, не для изолированных рабочих областей) */
 body::before {
   content: '';
   position: fixed;
@@ -86,4 +88,23 @@ body.light::before {
     radial-gradient(2px 2px at 900px 120px, #60a5fa, rgba(0,0,0,0)),
     radial-gradient(1px 1px at 1000px 60px, #3b82f6, rgba(0,0,0,0)),
     radial-gradient(2px 2px at 1100px 160px, #2563eb, rgba(0,0,0,0));
+}
+
+/* Глобальные стили body */
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* Убираем звёзды в рабочих областях, где нужна точность */
+.spec-page::before,
+.flow-editor::before,
+.calculations-page::before {
+  display: none !important;
 }
